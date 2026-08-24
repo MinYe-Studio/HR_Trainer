@@ -3,6 +3,9 @@ import { onMounted, ref, computed } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import client from '../api/client'
 import MarkdownBody from '../components/MarkdownBody.vue'
+import { useStudyTimer } from '../composables/useStudyTimer'
+
+useStudyTimer()
 
 const route = useRoute()
 const router = useRouter()

@@ -31,6 +31,7 @@ class User(Base):
     exam_records = relationship("ExamRecord", back_populates="user")
     placement_records = relationship("PlacementRecord", back_populates="user")
     review_records = relationship("ReviewRecord", back_populates="user")
+    study_records = relationship("StudyRecord", back_populates="user")
 
 
 class SkillModule(Base):
@@ -170,3 +171,16 @@ class ReviewRecord(Base):
     reviewed_at = Column(DateTime, server_default=func.now())
 
     user = relationship("User", back_populates="review_records")
+
+
+class StudyRecord(Base):
+    """学习时长记录（按用户+日期累计）。"""
+    __tablename__ = "study_records"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    study_date = Column(String(10), nullable=False, index=True)  # YYYY-MM-DD
+    seconds = Column(Integer, default=0)
+    updated_at = Column(DateTime, server_default=func.now(), onupdate=func.now())
+
+    user = relationship("User", back_populates="study_records")

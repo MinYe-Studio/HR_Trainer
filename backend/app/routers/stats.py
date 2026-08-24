@@ -1,4 +1,6 @@
 """统计路由：用户学习仪表盘汇总数据。"""
+from datetime import date
+
 from fastapi import APIRouter, Depends
 from sqlalchemy.orm import Session
 
@@ -88,11 +90,27 @@ def get_stats(
         .first()
     )
 
+    # 今日学习时长
+    today = date.today().isoformat()
+    today_study = (
+        db.query(models.StudyRecord)
+        .filter(
+            models.StudyRecord.user_id == current_user.id,
+            models.StudyRecord.study_date == today,
+        )
+        .first()
+    )
+
     return {
         "user": {
             "id": current_user.id,
             "username": current_user.username,
             "nickname": current_user.nickname,
+        },
+        "study_today": {
+            "date": today,
+            "seconds": today_study.seconds if today_study else 0,
+            "minutes": round((today_study.seconds if today_study else 0) / 60),
         },
         "chapters": {
             "total": total_chapters,

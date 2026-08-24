@@ -1,8 +1,9 @@
 <script setup>
 import { useUserStore } from '../stores/user'
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import client from '../api/client'
+import { iconOf } from '../utils/icons'
 
 const userStore = useUserStore()
 const router = useRouter()
@@ -62,6 +63,12 @@ function pathMove(idx, dir) {
   pathSaved.value = false
 }
 
+// 考核通过模块徽章
+const passedModules = computed(() => {
+  if (!stats.value) return []
+  return stats.value.exams.module_status.filter((m) => m.exam_passed)
+})
+
 async function savePath() {
   pathSaving.value = true
   try {
@@ -120,6 +127,18 @@ async function markReviewed(code) {
           <RouterLink class="btn primary" to="/modules"><span>开始学习</span></RouterLink>
           <RouterLink class="btn primary" to="/tasks"><span>教学任务</span></RouterLink>
         </div>
+        <p v-if="passedModules.length" class="hero-cheer">
+          🎉 太棒了！已获得 <b>{{ passedModules.length }}/6</b> 个技能认证徽章，继续加油！
+        </p>
+      </div>
+      <!-- 考核通过徽章（右上角） -->
+      <div class="hero-badges">
+        <div v-for="m in passedModules" :key="m.module_id" class="achievement" :title="m.name">
+          <div class="ach-badge" v-html="iconOf(m.code, 26)"></div>
+          <span class="ach-check">✓</span>
+          <span class="ach-name">{{ m.name }}</span>
+        </div>
+        <span v-if="passedModules.length" class="badge black ach-count">{{ passedModules.length }}/6 认证</span>
       </div>
       <!-- 几何块面（右下角） -->
       <div class="hero-blocks">
@@ -219,6 +238,17 @@ async function markReviewed(code) {
       <div class="dash-grid">
         <div class="card dash-card">
           <div class="dash-head">
+            <span class="dash-label">今日学习</span>
+            <span class="dash-value">{{ stats.study_today.minutes }}<small>分</small></span>
+          </div>
+          <div class="dash-bar full">
+            <div class="dash-bar-fill" :style="{ width: Math.min(100, stats.study_today.minutes / 30 * 100) + '%' }"></div>
+          </div>
+          <p class="dash-sub">{{ stats.study_today.minutes >= 30 ? '今日达标 🎯 保持节奏！' : '今日已学 ' + stats.study_today.minutes + ' 分钟' }}</p>
+        </div>
+
+        <div class="card dash-card">
+          <div class="dash-head">
             <span class="dash-label">学习进度</span>
             <span class="dash-value">{{ stats.chapters.percent }}%</span>
           </div>
@@ -312,8 +342,59 @@ async function markReviewed(code) {
   opacity: .85;
   max-width: 52ch;
 }
+.hero-cheer {
+  margin: 20px 0 0;
+  color: var(--sov-gold);
+  font-weight: 900;
+  font-size: 14px;
+  letter-spacing: .02em;
+}
+.hero-cheer b { color: var(--sov-paper); }
 .actions { display: flex; gap: 16px; flex-wrap: wrap; }
 .actions .btn { padding: 12px 34px; font-size: 15px; }
+
+/* 考核通过徽章（hero 右上角） */
+.hero-badges {
+  position: absolute; top: 20px; right: 24px;
+  display: flex; align-items: flex-start; gap: 10px;
+  flex-wrap: wrap; justify-content: flex-end;
+  max-width: 240px;
+}
+.achievement {
+  display: flex; flex-direction: column; align-items: center; gap: 4px;
+  position: relative;
+}
+.ach-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 52px; height: 52px;
+  background: var(--sov-gold);
+  border: 4px solid var(--sov-paper);
+  color: var(--sov-black);
+  box-shadow: var(--shadow-sm);
+  animation: ach-pop .5s ease-out;
+}
+@keyframes ach-pop {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+.ach-check {
+  position: absolute; top: -8px; right: -8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 20px; height: 20px;
+  background: var(--sov-red); color: var(--sov-paper);
+  border: 3px solid var(--sov-paper);
+  font-size: 12px; font-weight: 900;
+}
+.ach-name {
+  font-size: 10.5px; font-weight: 900;
+  color: var(--sov-paper);
+  background: rgba(26, 26, 26, .7);
+  border: 2px solid var(--sov-paper);
+  padding: 1px 6px;
+  white-space: nowrap;
+}
+.ach-count { margin-top: 4px; font-size: 11px; }
 
 /* 几何块面（构成主义，右下角） */
 .hero-blocks { position: absolute; right: 30px; bottom: 26px; display: flex; gap: 10px; }
@@ -404,6 +485,7 @@ async function markReviewed(code) {
 .dash-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
 .dash-label { font-size: 12.5px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; color: var(--sov-brown); }
 .dash-value { font-size: 26px; font-weight: 900; }
+.dash-value small { font-size: 13px; font-weight: 700; color: var(--sov-brown); margin-left: 2px; }
 .dash-bar { height: 14px; border: 3px solid var(--sov-black); background: var(--sov-white); }
 .dash-bar-fill { height: 100%; background: var(--sov-red); transition: width 300ms linear; }
 .dash-sub { margin: 8px 0 0; color: var(--sov-brown); font-size: 12.5px; font-weight: 700; }
@@ -432,5 +514,6 @@ async function markReviewed(code) {
   .hero { padding: 34px 22px; }
   .hero h1 { font-size: 28px; }
   .hero-blocks { display: none; }
+  .hero-badges { position: static; max-width: none; justify-content: flex-start; margin-top: 18px; }
 }
 </style>
