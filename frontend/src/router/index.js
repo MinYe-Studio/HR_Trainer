@@ -1,5 +1,4 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import { useUserStore } from '../stores/user'
 
 const routes = [
   { path: '/login', name: 'login', component: () => import('../views/LoginView.vue') },
@@ -22,13 +21,9 @@ const router = createRouter({
   routes,
 })
 
-// 登录守卫：未登录跳转到登录页
+// 单机单用户模式：无需登录守卫，登录页直接跳转首页
 router.beforeEach((to) => {
-  const userStore = useUserStore()
-  if (to.name !== 'login' && !userStore.token) {
-    return { name: 'login' }
-  }
-  if (to.name === 'login' && userStore.token) {
+  if (to.name === 'login') {
     return { name: 'home' }
   }
 })

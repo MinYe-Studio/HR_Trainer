@@ -1,30 +1,12 @@
-import axios from 'axios'
+// 单机模式 API 客户端：直接使用本地数据层（localApi）
+// 保持与 axios client 相同的方法签名（get/post/put → Promise<data>），视图无感知切换
+import { localApi, resetLocalState, getLocalProfile } from './localApi'
 
-const client = axios.create({
-  baseURL: '/api',
-  timeout: 15000,
-})
+const client = {
+  get: (path) => localApi.get(path),
+  post: (path, body) => localApi.post(path, body),
+  put: (path, body) => localApi.put(path, body),
+}
 
-// 请求拦截：自动携带 token
-client.interceptors.request.use((config) => {
-  const token = localStorage.getItem('token')
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`
-  }
-  return config
-})
-
-// 响应拦截：401 时清除登录态并记录提示信息
-client.interceptors.response.use(
-  (res) => res.data,
-  (err) => {
-    if (err.response?.status === 401) {
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      localStorage.setItem('auth_message', '登录已过期或账号已变更，请重新登录')
-    }
-    return Promise.reject(err)
-  }
-)
-
+export { resetLocalState, getLocalProfile }
 export default client
