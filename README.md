@@ -21,17 +21,23 @@ HR_Trainner/
 │   │   ├── database.py # 数据库会话
 │   │   ├── models.py   # 数据模型
 │   │   ├── schemas.py  # Pydantic 模式
-│   │   ├── routers/    # 路由（auth / content / practice / exams / stats）
-│   │   ├── services/   # 业务逻辑（评分等）
+│   │   ├── routers/    # 路由（auth / content / placement / practice / progress）
+│   │   ├── services/   # 业务逻辑（教学任务计算等）
 │   │   ├── utils/      # 工具（JWT、密码哈希）
-│   │   └── seed.py     # 种子数据
+│   │   ├── content_data.py # 教学内容数据（书单五层 + 贯穿案例）
+│   │   └── seed.py     # 种子数据（幂等）
+│   ├── smoke_test.py   # 全功能冒烟测试（回归验证）
 │   └── data/           # SQLite 数据库文件
-└── frontend/           # Vue 3 前端
-    └── src/
-        ├── api/        # Axios 客户端
-        ├── router/     # 路由
-        ├── stores/     # Pinia 状态
-        └── views/      # 页面
+├── frontend/           # Vue 3 前端
+│   └── src/
+│       ├── api/        # Axios 客户端
+│       ├── router/     # 路由
+│       ├── stores/     # Pinia 状态
+│       ├── components/ # 组件（MarkdownBody 等）
+│       └── views/      # 页面
+├── CONTENT_GUIDE.md    # 教学内容构建指南（书单五层 + 章节结构规范）
+├── CASE_STUDY.md       # 贯穿案例（莱茵科技 × 林晓）
+└── EXAM_DESIGN.md      # S6 考核模块设计提案
 ```
 
 ## 快速启动
@@ -47,6 +53,11 @@ python3 -m venv .venv
 ```
 
 接口文档：http://127.0.0.1:8000/docs
+
+回归验证（后端运行中执行）：
+```bash
+cd backend && ../.venv/bin/python smoke_test.py
+```
 
 ### 2. 前端（端口 5174）
 
