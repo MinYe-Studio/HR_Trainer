@@ -144,6 +144,12 @@ const fmtDuration = (s) => {
             <p v-if="!d.correct" class="fb-line">正确答案：<b>{{ d.correct_answer.join('、') }}</b></p>
           </div>
           <p class="fb-exp">💡 {{ d.explanation }}</p>
+          <div class="fb-kp">
+            <span>📚 涉及章节：《{{ d.chapter_title || '模块综合' }}》 · 知识点：{{ d.knowledge_point || '模块综合' }}</span>
+            <RouterLink v-if="d.chapter_id" :to="`/modules/${code}/chapters/${d.chapter_id}`" class="btn mini">
+              <span>查看讲解</span>
+            </RouterLink>
+          </div>
         </div>
       </div>
     </template>
@@ -211,4 +217,15 @@ const fmtDuration = (s) => {
   background: var(--sov-paper); border: 2px solid var(--sov-black);
   font-size: 13px; font-weight: 700;
 }
+.fb-kp {
+  display: flex; align-items: center; justify-content: space-between; gap: 10px;
+  margin: 10px 0 0;
+  font-size: 12.5px; font-weight: 900;
+  color: var(--sov-ink-2, #55677a);
+  background: var(--sov-surface-2, #fafbfc);
+  border: 2px solid var(--sov-border, #d9e1e8);
+  padding: 8px 12px;
+  flex-wrap: wrap;
+}
+.fb-kp .btn.mini { padding: 4px 12px; font-size: 12px; box-shadow: var(--shadow-sm); }
 </style>

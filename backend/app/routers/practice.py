@@ -52,6 +52,9 @@ def submit_practice(
                 "correct_answer": q.answer or [],
                 "correct": is_correct,
                 "explanation": q.explanation or "",
+                "chapter_id": q.chapter_id,
+                "chapter_title": chapter.title,
+                "knowledge_point": q.knowledge_point or "",
             }
         )
 

@@ -77,6 +77,7 @@ class Question(Base):
     options = Column(JSON, default=list)  # [{key:"A", text:"..."}]
     answer = Column(JSON, default=list)  # 正确答案 key 列表，如 ["A"]
     explanation = Column(Text, default="")  # 答案解析
+    knowledge_point = Column(String(100), default="")  # 考点/知识点标注
     sort_order = Column(Integer, default=0)
 
     chapter = relationship("Chapter", back_populates="questions")

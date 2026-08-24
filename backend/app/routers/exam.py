@@ -143,6 +143,8 @@ def submit_exam(
                 "correct_answer": q.answer or [],
                 "correct": is_correct,
                 "explanation": q.explanation or "",
+                "chapter_id": q.chapter_id,
+                "knowledge_point": q.knowledge_point or "",
             }
         )
 
@@ -217,6 +219,10 @@ def exam_result_detail(
     if not r or r.user_id != current_user.id:
         raise HTTPException(status_code=404, detail="成绩记录不存在")
     module = r.paper.module
+    # 章节标题映射
+    chapters = {
+        c.id: c for c in db.query(models.Chapter).filter(models.Chapter.module_id == module.id).all()
+    }
     qids = r.question_ids or []
     questions = (
         db.query(models.Question)
@@ -226,6 +232,7 @@ def exam_result_detail(
     details = []
     for q in questions:
         user_answer = (r.answers or {}).get(str(q.id), [])
+        ch = chapters.get(q.chapter_id) if q.chapter_id else None
         details.append(
             {
                 "question_id": q.id,
@@ -237,6 +244,9 @@ def exam_result_detail(
                 "correct_answer": q.answer or [],
                 "correct": sorted(user_answer) == sorted(q.answer or []),
                 "explanation": q.explanation or "",
+                "chapter_id": q.chapter_id,
+                "chapter_title": ch.title if ch else "",
+                "knowledge_point": q.knowledge_point or "",
             }
         )
     return schemas.ExamResult(

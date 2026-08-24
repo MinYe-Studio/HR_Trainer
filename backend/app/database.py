@@ -30,6 +30,7 @@ def apply_migrations() -> None:
     _ensure_column("exam_records", "duration_seconds", "INTEGER DEFAULT 0")
     _ensure_column("exam_records", "question_ids", "JSON")
     _ensure_column("users", "learning_path", "JSON")
+    _ensure_column("questions", "knowledge_point", "VARCHAR(100) DEFAULT ''")
 
 
 def get_db():

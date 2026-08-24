@@ -31,29 +31,38 @@ def _upsert_module(db, m):
 
 
 def _add_questions(db, questions, module, category, chapter=None, start_order=0):
-    # 幂等：跳过已存在的题干，避免重复播种
-    existing = {
-        row[0]
-        for row in db.query(models.Question.stem)
+    # 幂等：跳过已存在的题干，避免重复播种；已存在则同步知识点/章节
+    existing_rows = (
+        db.query(models.Question)
         .filter(
             models.Question.module_id == module.id,
             models.Question.category == category,
         )
         .all()
-    }
+    )
+    existing = {q.stem: q for q in existing_rows}
     added = 0
     for i, q in enumerate(questions, start=start_order):
-        if q["stem"] in existing:
+        row = existing.get(q["stem"])
+        if row:
+            # 同步知识点与章节关联（保留原题目内容）
+            if q.get("knowledge_point"):
+                row.knowledge_point = q["knowledge_point"]
+            if chapter is not None:
+                row.chapter_id = chapter.id
+            elif q.get("chapter_id"):
+                row.chapter_id = q["chapter_id"]
             continue
         item = models.Question(
             module_id=module.id,
-            chapter_id=chapter.id if chapter else None,
+            chapter_id=q.get("chapter_id") or (chapter.id if chapter else None),
             category=category,
             qtype=q["qtype"],
             stem=q["stem"],
             options=q["options"],
             answer=q["answer"],
             explanation=q.get("explanation", ""),
+            knowledge_point=q.get("knowledge_point", ""),
             sort_order=i,
         )
         db.add(item)
@@ -135,13 +144,31 @@ def _seed_module_dict(db, data: dict) -> None:
         _add_questions(db, ch.get("questions", []), mod, category="practice", chapter=chapter)
         if ch.get("case_questions"):
             _add_questions(db, ch["case_questions"], mod, category="practice_case", chapter=chapter, start_order=100)
+        # 训练题自动标注知识点 = 章节主题（去掉"第X章 "前缀）
+        topic = ch["title"].split(" ", 1)[1] if " " in ch["title"] else ch["title"]
+        _annotate_practice_kp(db, mod.id, chapter.id, topic)
 
     exam = data.get("exam")
     if exam:
         paper = _upsert_exam_paper(db, mod.id, exam)
-        _add_questions(db, exam.get("questions", []), mod, category="exam")
+        # 考核题：支持 chapter_index（所属章节序号）与 knowledge_point（知识点）
+        module_chapters = (
+            db.query(models.Chapter)
+            .filter(models.Chapter.module_id == mod.id)
+            .order_by(models.Chapter.sort_order)
+            .all()
+        )
+        for q in exam.get("questions", []):
+            ch = None
+            if q.get("chapter_index") is not None and q["chapter_index"] < len(module_chapters):
+                ch = module_chapters[q["chapter_index"]]
+            _add_questions(db, [q], mod, category="exam", chapter=ch)
         if exam.get("case_questions"):
-            _add_questions(db, exam["case_questions"], mod, category="exam_case", start_order=100)
+            for q in exam["case_questions"]:
+                ch = None
+                if q.get("chapter_index") is not None and q["chapter_index"] < len(module_chapters):
+                    ch = module_chapters[q["chapter_index"]]
+                _add_questions(db, [q], mod, category="exam_case", chapter=ch, start_order=100)
 
 
 def _seed_json_modules(db) -> None:
@@ -157,6 +184,74 @@ def _seed_json_modules(db) -> None:
             continue
         print(f"[seed] 写入模块: {data.get('name')} ({f.name})")
         _seed_module_dict(db, data)
+
+
+# 招聘模块考核题的知识点标注（子串匹配 → 章节序号/知识点）
+# 章节：0=岗位需求分析 1=结构化面试 2=评估与录用 3=战略性招聘 4=雇主品牌
+RECRUITMENT_EXAM_META = [
+    ("招聘流程的起点", 0, "岗位需求分析"),
+    ("岗位的核心产出指标", 0, "岗位说明书构成"),
+    ("任职资格越严格", 0, "任职资格匹配"),
+    ("STAR 法则中 R", 1, "STAR法则"),
+    ("结构化面试的优势", 1, "结构化面试"),
+    ("最后一个问题回答出色", 1, "面试认知偏差"),
+    ("概括性回答时应", 1, "行为面试与STAR追问"),
+    ("背景调查的目的", 2, "背景调查"),
+    ("专业能力通常占多少权重", 2, "评估维度与权重"),
+    ("书面 Offer 应包含", 2, "Offer与录用决策"),
+    ("人才规划四步法中", 3, "人才规划四步法"),
+    ("高人才密度\"理念", 4, "高人才密度"),
+    ("任期计划\"，其目的", 4, "任期制"),
+    ("数据驱动招聘决策", 4, "数据驱动招聘"),
+    ("EVP）在招聘中的作用", 4, "EVP雇主品牌"),
+    ("【案例】陈工说", 0, "岗位需求分析"),
+    ("【案例】\"聊得来\"但 STAR", 1, "结构化面试与行为证据"),
+    ("【案例】何工因薪资低", 4, "EVP与任期制"),
+]
+
+
+def _annotate_recruitment_exam(db) -> None:
+    """为招聘模块考核题补充知识点与章节关联。"""
+    mod = db.query(models.SkillModule).filter(models.SkillModule.code == "recruitment").first()
+    if not mod:
+        return
+    chapters = (
+        db.query(models.Chapter)
+        .filter(models.Chapter.module_id == mod.id)
+        .order_by(models.Chapter.sort_order)
+        .all()
+    )
+    qs = db.query(models.Question).filter(
+        models.Question.module_id == mod.id,
+        models.Question.category.in_(["exam", "exam_case"]),
+    ).all()
+    updated = 0
+    for q in qs:
+        for frag, ch_idx, kp in RECRUITMENT_EXAM_META:
+            if frag in q.stem:
+                q.knowledge_point = kp
+                if ch_idx < len(chapters):
+                    q.chapter_id = chapters[ch_idx].id
+                updated += 1
+                break
+    if updated:
+        print(f"  [标注] 招聘考核题知识点 +{updated}")
+
+
+def _annotate_practice_kp(db, module_id, chapter_id, topic) -> None:
+    """训练题知识点自动标注（按章节主题）。"""
+    rows = (
+        db.query(models.Question)
+        .filter(
+            models.Question.module_id == module_id,
+            models.Question.chapter_id == chapter_id,
+            models.Question.category.in_(["practice", "practice_case"]),
+        )
+        .all()
+    )
+    for r in rows:
+        if not r.knowledge_point:
+            r.knowledge_point = topic
 
 
 def seed() -> None:
@@ -195,6 +290,7 @@ def seed() -> None:
         print("[seed] 写入招聘与面试模块课程...")
         rec_meta = next(m for m in MODULES if m["code"] == "recruitment")
         _seed_module_dict(db, {**rec_meta, **RECRUITMENT})
+        _annotate_recruitment_exam(db)
 
         # ---- 其他模块（JSON 文件，S8）----
         _seed_json_modules(db)
