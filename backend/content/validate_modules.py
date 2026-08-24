@@ -62,8 +62,8 @@ def validate_module(path: Path):
                 errors.append(f"{p}: 缺少「{marker}」结构")
         qs = ch.get("questions") or []
         cqs = ch.get("case_questions") or []
-        if len(qs) != 5:
-            errors.append(f"{p}: 知识题 {len(qs)}（应为 5）")
+        if not (5 <= len(qs) <= 6):
+            errors.append(f"{p}: 知识题 {len(qs)}（应为 5~6）")
         if len(cqs) != 2:
             errors.append(f"{p}: 案例题 {len(cqs)}（应为 2）")
         for j, q in enumerate(qs):
