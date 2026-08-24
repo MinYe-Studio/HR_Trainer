@@ -19,3 +19,4 @@ frontend/ios/DerivedData/
 frontend/ios/App/Pods/
 frontend/ios/App/App.xcworkspace/xcuserdata/
 *.xcuserstate
+frontend/ios/DerivedDataRelease/
