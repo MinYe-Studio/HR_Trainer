@@ -260,17 +260,6 @@ async function markReviewed(code) {
 
         <div class="card dash-card">
           <div class="dash-head">
-            <span class="dash-label">摸底测试</span>
-            <span class="dash-value">{{ stats.placement.taken ? stats.placement.total_score : '—' }}</span>
-          </div>
-          <div class="dash-bar full">
-            <div class="dash-bar-fill" :style="{ width: (stats.placement.taken ? stats.placement.total_score : 0) + '%' }"></div>
-          </div>
-          <p class="dash-sub">{{ stats.placement.taken ? '已参加入营摸底' : '尚未参加摸底测试' }}</p>
-        </div>
-
-        <div class="card dash-card">
-          <div class="dash-head">
             <span class="dash-label">考核认证</span>
             <span class="dash-value">{{ stats.exams.passed_count }}/6</span>
           </div>
