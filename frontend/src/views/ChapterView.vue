@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import client from '../api/client'
 import MarkdownBody from '../components/MarkdownBody.vue'
@@ -19,6 +19,38 @@ const saving = ref(false)
 const loading = ref(true)
 const error = ref('')
 
+// 翻页式阅读：按段落分页
+const pages = ref([])
+const pageIdx = ref(0)
+const totalPages = computed(() => pages.value.length)
+const isLastPage = computed(() => pageIdx.value === totalPages.value - 1)
+
+function splitPages(content) {
+  const blocks = content.split(/\n{2,}/).map((b) => b.trim()).filter(Boolean)
+  const result = []
+  let current = ''
+  const isHeading = (b) => /^#{1,3}\s/.test(b)
+  for (const b of blocks) {
+    if (/^-{3,}$/.test(b)) continue // 跳过分隔线
+    if (current) {
+      // 与当前页合并（标题+标题+段落 → 一页）
+      current += '\n\n' + b
+      if (!isHeading(b)) {
+        result.push(current)
+        current = ''
+      }
+    } else {
+      current = b
+      if (!isHeading(b)) {
+        result.push(current)
+        current = ''
+      }
+    }
+  }
+  if (current) result.push(current)
+  return result
+}
+
 onMounted(async () => {
   try {
     const [ch, mod, prog] = await Promise.all([
@@ -30,6 +62,8 @@ onMounted(async () => {
     moduleName.value = mod.name || ''
     moduleChapters.value = mod.chapters || []
     completed.value = prog.chapter_progress?.[ch.id]?.completed === true
+    pages.value = splitPages(ch.content || '')
+    pageIdx.value = 0
   } catch (e) {
     error.value = e.response?.data?.detail || '章节加载失败'
   } finally {
@@ -37,7 +71,6 @@ onMounted(async () => {
   }
 })
 
-// 下一章导航
 const nextChapter = computed(() => {
   if (!chapter.value || !moduleChapters.value.length) return null
   const idx = moduleChapters.value.findIndex((c) => c.id === chapter.value.id)
@@ -45,6 +78,14 @@ const nextChapter = computed(() => {
     ? moduleChapters.value[idx + 1]
     : null
 })
+
+function go(delta) {
+  const next = pageIdx.value + delta
+  if (next >= 0 && next < totalPages.value) {
+    pageIdx.value = next
+    window.scrollTo({ top: 0, behavior: 'smooth' })
+  }
+}
 
 async function toggleComplete() {
   saving.value = true
@@ -72,11 +113,26 @@ async function toggleComplete() {
     <p v-if="loading" class="hint">加载中...</p>
 
     <template v-if="chapter">
+      <h1 class="ch-title">{{ chapter.title }}</h1>
+
+      <!-- 当前段 -->
       <div class="card content-card">
-        <MarkdownBody :content="chapter.content" />
+        <MarkdownBody :content="pages[pageIdx] || ''" />
       </div>
 
-      <div class="footer-bar">
+      <!-- 翻页控制 -->
+      <div class="pager">
+        <button class="btn" :disabled="pageIdx === 0 || !totalPages" @click="go(-1)">
+          <span>上一段</span>
+        </button>
+        <span class="page-ind">{{ totalPages ? pageIdx + 1 : 0 }} / {{ totalPages }}</span>
+        <button v-if="!isLastPage" class="btn primary" :disabled="!totalPages" @click="go(1)">
+          <span>下一段</span>
+        </button>
+      </div>
+
+      <!-- 最后一页：操作方块 -->
+      <div v-if="isLastPage && totalPages" class="footer-bar">
         <button class="btn" :class="{ primary: !completed }" :disabled="saving" @click="toggleComplete">
           <span>{{ saving ? '保存中...' : completed ? '取消完成标记' : '标记已完成' }}</span>
         </button>
@@ -90,18 +146,30 @@ async function toggleComplete() {
           <span>返回模块</span>
         </RouterLink>
       </div>
-      <p v-if="completed" class="done-note">✓ 本章已学完</p>
+      <p v-if="isLastPage && completed" class="done-note">✓ 本章已学完</p>
     </template>
   </div>
 </template>
 
 <style scoped>
-.crumbs { margin-bottom: 16px; }
+.crumbs { margin-bottom: 10px; }
 .back { font-weight: 900; font-size: 13px; text-transform: uppercase; letter-spacing: .05em; }
 .error { color: var(--sov-red); font-weight: 900; }
 .hint { color: var(--sov-brown); font-weight: 700; }
 
-.content-card { padding: 34px 36px; margin-bottom: 16px; }
+.ch-title { margin: 0 0 12px; font-size: 20px; }
+
+.content-card { padding: 26px 28px; margin-bottom: 12px; }
+
+/* 翻页控制 */
+.pager {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  margin-bottom: 14px;
+}
+.pager .btn { min-width: 96px; padding: 10px 8px; font-size: 13.5px; }
+.page-ind { font-size: 13px; font-weight: 900; color: var(--sov-brown); }
+
+/* 最后一页操作按钮（统一方块） */
 .footer-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
 .footer-bar .btn { width: 100%; padding: 12px 8px; font-size: 13.5px; }
 .done-note {
@@ -121,5 +189,6 @@ async function toggleComplete() {
 
 @media (max-width: 720px) {
   .content-card { padding: 18px 14px; }
+  .ch-title { font-size: 18px; }
 }
 </style>

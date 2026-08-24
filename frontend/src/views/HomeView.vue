@@ -19,9 +19,9 @@ const reviews = ref([])
 // 学习统计仪表盘
 const stats = ref(null)
 
-// 个性化学习路径
+// 个性化学习路径（默认收起；首次使用前显示 NEW）
 const pathCodes = ref([])
-const pathExpanded = ref(!localStorage.getItem('path_prompt_done'))
+const pathExpanded = ref(false)
 const pathFirstTime = ref(!localStorage.getItem('path_prompt_done'))
 const pathSaving = ref(false)
 const pathSaved = ref(false)
@@ -124,6 +124,34 @@ async function resetPath() {
 
 <template>
   <div class="home">
+    <!-- 黑底方格 Hero（恢复原样式） -->
+    <section class="hero">
+      <div class="hero-grid grid-pattern on-dark"></div>
+      <div class="hero-content">
+        <h1>欢迎回来，<br />{{ userStore.user?.nickname || userStore.user?.username }}</h1>
+        <p class="hero-sub">系统学习六大 HR 核心技能 · 章节训练巩固 · 模块考核认证</p>
+        <div class="actions">
+          <RouterLink class="btn primary" to="/modules"><span>开始学习</span></RouterLink>
+          <RouterLink class="btn primary" to="/tasks"><span>教学任务</span></RouterLink>
+        </div>
+        <p v-if="passedModules.length" class="hero-cheer">🎉 已获 <b>{{ passedModules.length }}/6</b> 技能徽章，继续加油！</p>
+      </div>
+      <!-- 考核通过徽章（右上角） -->
+      <div class="hero-badges">
+        <div v-for="m in passedModules" :key="m.module_id" class="achievement" :title="m.name">
+          <div class="ach-badge" v-html="iconOf(m.code, 22)"></div>
+          <span class="ach-check">✓</span>
+          <span class="ach-name">{{ m.name }}</span>
+        </div>
+      </div>
+      <!-- 几何块面（右下角） -->
+      <div class="hero-blocks">
+        <span class="blk red"></span>
+        <span class="blk gold"></span>
+        <span class="blk paper"></span>
+      </div>
+    </section>
+
     <!-- 入营测试引导（紧凑横幅） -->
     <div v-if="showBanner" class="banner card">
       <div class="banner-body">
@@ -134,33 +162,6 @@ async function resetPath() {
         <button class="btn primary small" @click="goPlacement"><span>去测试</span></button>
         <button class="btn small" @click="dismissBanner"><span>稍后</span></button>
       </div>
-    </div>
-
-    <!-- 问候 + 今日学习（紧凑主卡） -->
-    <div class="card greet-card">
-      <div class="greet-top">
-        <div>
-          <p class="greet-time">{{ greeting }}，{{ userStore.user?.nickname || userStore.user?.username }}</p>
-          <p class="greet-sub">保持节奏，每天进步一点</p>
-        </div>
-        <div class="today-study">
-          <span class="today-min">{{ stats?.study_today.minutes ?? 0 }}</span>
-          <span class="today-unit">分钟<br />今日</span>
-        </div>
-      </div>
-      <RouterLink to="/modules" class="btn primary greet-btn"><span>开始学习</span></RouterLink>
-      <p v-if="passedModules.length" class="cheer">
-        🎉 已获 <b>{{ passedModules.length }}/6</b> 技能徽章，继续加油！
-      </p>
-    </div>
-
-    <!-- 考核徽章横滑 -->
-    <div v-if="passedModules.length" class="badge-row">
-      <div v-for="m in passedModules" :key="m.module_id" class="ach" :title="m.name">
-        <div class="ach-badge" v-html="iconOf(m.code, 22)"></div>
-        <span class="ach-name">{{ m.name }}</span>
-      </div>
-      <RouterLink to="/modules" class="ach-more">全部 →</RouterLink>
     </div>
 
     <!-- 2×2 统计 -->
@@ -242,6 +243,96 @@ async function resetPath() {
 
 <style scoped>
 .home { display: flex; flex-direction: column; gap: 12px; padding-bottom: 70px; }
+
+/* 黑底方格 Hero */
+.hero {
+  position: relative; overflow: hidden;
+  background: var(--sov-black);
+  color: var(--sov-paper);
+  border: 4px solid var(--sov-black);
+  box-shadow: var(--shadow-lg);
+  padding: 26px 22px;
+}
+.hero-grid { position: absolute; inset: 0; pointer-events: none; }
+.hero-content { position: relative; z-index: 1; max-width: 620px; }
+.hero h1 {
+  margin: 0 0 8px;
+  color: var(--sov-paper);
+  font-size: 26px;
+  text-transform: uppercase;
+  letter-spacing: .01em;
+  line-height: 1.15;
+}
+.hero-sub {
+  margin: 0 0 16px;
+  color: var(--sov-paper);
+  font-weight: 700;
+  font-size: 13.5px;
+  letter-spacing: .03em;
+  opacity: .85;
+}
+.hero-cheer {
+  margin: 12px 0 0;
+  color: var(--sov-gold);
+  font-weight: 900;
+  font-size: 13px;
+}
+.hero-cheer b { color: var(--sov-paper); }
+.actions { display: flex; gap: 12px; flex-wrap: wrap; }
+.actions .btn { padding: 10px 24px; font-size: 14px; }
+
+.hero-badges {
+  position: absolute; top: 14px; right: 16px;
+  display: flex; align-items: flex-start; gap: 8px;
+  flex-wrap: wrap; justify-content: flex-end;
+  max-width: 200px;
+}
+.achievement { display: flex; flex-direction: column; align-items: center; gap: 3px; position: relative; }
+.ach-badge {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 42px; height: 42px;
+  background: var(--sov-gold);
+  border: 3px solid var(--sov-paper);
+  color: var(--sov-black);
+  box-shadow: var(--shadow-sm);
+  animation: ach-pop .5s ease-out;
+}
+@keyframes ach-pop {
+  0% { transform: scale(0); }
+  60% { transform: scale(1.25); }
+  100% { transform: scale(1); }
+}
+.ach-check {
+  position: absolute; top: -7px; right: -7px;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 18px; height: 18px;
+  background: var(--sov-red); color: var(--sov-paper);
+  border: 2px solid var(--sov-paper);
+  font-size: 11px; font-weight: 900;
+}
+.ach-name {
+  font-size: 9.5px; font-weight: 900;
+  color: var(--sov-paper);
+  background: rgba(26, 26, 26, .7);
+  border: 2px solid var(--sov-paper);
+  padding: 1px 5px;
+  white-space: nowrap;
+}
+.hero-blocks { position: absolute; right: 20px; bottom: 16px; display: flex; gap: 6px; }
+.hero-blocks .blk {
+  width: 26px; height: 26px;
+  transform: rotate(45deg);
+  border: 3px solid var(--sov-black);
+  box-shadow: var(--shadow-sm);
+}
+.hero-blocks .blk.red { background: var(--sov-red); }
+.hero-blocks .blk.gold { background: var(--sov-gold); }
+.hero-blocks .blk.paper { background: var(--sov-paper); }
+
+@media (max-width: 720px) {
+  .hero-badges { position: static; max-width: none; justify-content: flex-start; margin-top: 12px; }
+  .hero-blocks { display: none; }
+}
 
 /* 引导横幅 */
 .banner {

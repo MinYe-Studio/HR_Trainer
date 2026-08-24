@@ -71,12 +71,12 @@ onMounted(async () => {
 }
 .mcard {
   position: relative;
-  display: flex; align-items: center; gap: 10px;
+  display: flex; align-items: center; gap: 12px;
   background: var(--sov-white);
   border: 3px solid var(--sov-black);
   border-radius: 0;
   box-shadow: var(--shadow-sm);
-  padding: 12px;
+  padding: 16px 14px;
   text-decoration: none; color: inherit;
   transition: transform 100ms linear, box-shadow 100ms linear;
 }
@@ -84,26 +84,26 @@ onMounted(async () => {
 .step {
   position: absolute; top: -8px; left: 8px;
   display: inline-flex; align-items: center; justify-content: center;
-  min-width: 22px; height: 22px; padding: 0 4px;
+  min-width: 24px; height: 24px; padding: 0 5px;
   background: var(--sov-red); color: var(--sov-paper);
   border: 2px solid var(--sov-black);
-  font-size: 11px; font-weight: 900;
+  font-size: 12px; font-weight: 900;
 }
 .icon {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 42px; height: 42px; flex-shrink: 0;
+  width: 52px; height: 52px; flex-shrink: 0;
   border: 3px solid var(--sov-black);
   color: var(--sov-black);
   background: transparent;
 }
 .icon :deep(svg) { display: block; }
 .minfo { flex: 1; min-width: 0; }
-.minfo h3 { margin: 0; font-size: 13.5px; line-height: 1.3; }
-.cnt { font-size: 10.5px; font-weight: 900; color: var(--sov-brown); }
+.minfo h3 { margin: 0; font-size: 15.5px; line-height: 1.3; }
+.cnt { font-size: 11px; font-weight: 900; color: var(--sov-brown); }
 
 @media (min-width: 768px) {
   .grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
-  .mcard { padding: 16px; }
-  .minfo h3 { font-size: 15px; }
+  .mcard { padding: 18px; }
+  .minfo h3 { font-size: 16.5px; }
 }
 </style>

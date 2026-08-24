@@ -64,36 +64,33 @@ function isDone(ch) {
         >
           <div class="ch-no" :class="{ done: isDone(ch) }">{{ ch.sort_order + 1 }}</div>
           <div class="ch-body">
-            <div class="ch-head">
-              <h3>{{ ch.title }}</h3>
-              <span class="badge" :class="isDone(ch) ? 'black' : 'gold'">
-                {{ isDone(ch) ? '已完成' : '未学习' }}
-              </span>
-            </div>
+            <h3>{{ ch.title }}</h3>
             <p class="summary">{{ ch.summary }}</p>
           </div>
+          <!-- 书签式状态标记（右上角） -->
+          <span class="bookmark" :class="{ done: isDone(ch) }">{{ isDone(ch) ? '已完成' : '未学习' }}</span>
         </RouterLink>
       </div>
 
       <!-- 模块考核卡片 -->
       <div v-if="examInfo" class="card exam-card">
-        <div class="exam-head">
-          <div>
-            <h2 class="sec-title inline">模块考核</h2>
-            <p class="exam-desc">{{ examInfo.description }}</p>
-          </div>
-          <div class="exam-meta">
-            <span class="badge black">随机 {{ examInfo.knowledge_count >= 7 ? 7 : examInfo.knowledge_count }} 知识 + 3 案例</span>
-            <span class="badge gold">通过线 {{ examInfo.pass_score }} 分</span>
-            <span v-if="examLatest" class="badge" :class="examLatest.passed ? 'black' : 'red'">
-              最近 {{ examLatest.score }} 分 {{ examLatest.passed ? '通过' : '未通过' }}
-            </span>
-            <span v-else class="badge red">未考核</span>
-          </div>
+        <div class="exam-top">
+          <h2 class="exam-title">模块考核</h2>
+          <p class="exam-desc">{{ examInfo.description }}</p>
         </div>
-        <RouterLink :to="`/modules/${module.code}/exam`" class="btn primary">
-          <span>{{ examLatest ? '重新考核' : '去考核' }}</span>
-        </RouterLink>
+        <div class="exam-meta">
+          <span class="mini-badge">随机 {{ examInfo.knowledge_count >= 7 ? 7 : examInfo.knowledge_count }} 知识 + 3 案例</span>
+          <span class="mini-badge gold">通过线 {{ examInfo.pass_score }} 分</span>
+          <span v-if="examLatest" class="mini-badge" :class="examLatest.passed ? 'done' : 'fail'">
+            {{ examLatest.passed ? '已通过' : '未通过' }} {{ examLatest.score }} 分
+          </span>
+          <span v-else class="mini-badge fail">未考核</span>
+        </div>
+        <div class="exam-foot">
+          <RouterLink :to="`/modules/${module.code}/exam`" class="btn primary">
+            <span>{{ examLatest ? '重新考核' : '去考核' }}</span>
+          </RouterLink>
+        </div>
       </div>
     </template>
   </div>
@@ -115,30 +112,69 @@ function isDone(ch) {
 .sec-title { margin: 0 0 16px; font-size: 18px; border-bottom: 4px solid var(--sov-black); padding-bottom: 8px; }
 .sec-title.inline { margin: 0 0 6px; display: inline-block; border-bottom: none; padding-bottom: 0; font-size: 20px; }
 
-/* 考核卡片 */
-.exam-card { padding: 22px 24px; margin-top: 26px; display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
-.exam-card .btn { flex-shrink: 0; }
-.exam-head { flex: 1; min-width: 260px; }
-.exam-desc { margin: 0 0 10px; color: var(--sov-brown); font-size: 13.5px; font-weight: 700; }
+/* 考核卡片（纵向布局：标题行 / 徽章行 / 底部按钮） */
+.exam-card { padding: 16px 18px; margin-top: 22px; display: flex; flex-direction: column; gap: 10px; }
+.exam-top { display: flex; align-items: baseline; justify-content: space-between; gap: 12px; }
+.exam-title { margin: 0; font-size: 17px; flex-shrink: 0; }
+.exam-desc {
+  margin: 0;
+  color: var(--sov-brown); font-size: 12px; font-weight: 700;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
 .exam-meta { display: flex; gap: 8px; flex-wrap: wrap; }
-.chapters { display: flex; flex-direction: column; gap: 14px; }
+.mini-badge {
+  display: inline-block;
+  padding: 3px 10px;
+  border: 2px solid var(--sov-black);
+  background: var(--sov-paper);
+  font-size: 12px; font-weight: 900;
+  color: var(--sov-black);
+}
+.mini-badge.gold { background: var(--sov-gold); }
+.mini-badge.done { background: var(--sov-black); color: var(--sov-paper); }
+.mini-badge.fail { background: var(--sov-red); color: var(--sov-paper); }
+.exam-foot { display: flex; justify-content: flex-end; }
+.exam-foot .btn { padding: 9px 26px; font-size: 14px; }
+
+/* 章节列表 */
+.chapters { display: flex; flex-direction: column; gap: 12px; }
 .chapter {
-  display: flex; gap: 16px; padding: 16px 18px;
+  position: relative;
+  display: flex; gap: 12px; padding: 14px 14px;
   text-decoration: none; color: inherit;
   transition: transform 100ms linear, box-shadow 100ms linear;
 }
 .chapter:hover { transform: translate(3px, 3px); box-shadow: var(--shadow-sm); }
 .chapter:active { transform: translate(5px, 5px); box-shadow: none; }
+/* 章节序号方块（缩小，讲解为主体） */
 .ch-no {
   display: flex; align-items: center; justify-content: center;
-  width: 42px; flex-shrink: 0;
-  font-size: 18px; font-weight: 900;
+  width: 30px; flex-shrink: 0;
+  font-size: 14px; font-weight: 900;
   background: var(--sov-paper); color: var(--sov-black);
   border: 3px solid var(--sov-black);
 }
 .ch-no.done { background: var(--sov-black); color: var(--sov-paper); }
-.ch-body { flex: 1; }
-.ch-head { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
-.ch-head h3 { margin: 0; font-size: 16px; }
-.summary { margin: 0; color: var(--sov-brown); font-size: 13.5px; font-weight: 700; }
+.ch-body { flex: 1; min-width: 0; padding-right: 54px; }
+.ch-body h3 { margin: 0 0 3px; font-size: 15px; line-height: 1.35; }
+.summary { margin: 0; color: var(--sov-brown); font-size: 12.5px; font-weight: 700; }
+
+/* 书签式状态标记（右上角） */
+.bookmark {
+  position: absolute; top: 0; right: 0;
+  padding: 4px 12px;
+  background: var(--sov-gold); color: var(--sov-black);
+  font-size: 11px; font-weight: 900;
+  border-left: 3px solid var(--sov-black);
+  border-bottom: 3px solid var(--sov-black);
+  clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 7px), 0 100%);
+}
+.bookmark.done { background: var(--sov-black); color: var(--sov-paper); }
+
+@media (max-width: 720px) {
+  .head-card { padding: 16px 14px; }
+  .exam-top { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .exam-desc { white-space: normal; }
+  .ch-body { padding-right: 48px; }
+}
 </style>
