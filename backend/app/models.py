@@ -23,6 +23,7 @@ class User(Base):
     password_hash = Column(String(200), nullable=False)
     nickname = Column(String(50), default="")
     role = Column(String(20), default="learner")  # learner / admin
+    learning_path = Column(JSON, default=list)  # 个性化学习路径（模块 code 顺序，空=默认）
     created_at = Column(DateTime, server_default=func.now())
 
     progress = relationship("ChapterProgress", back_populates="user")

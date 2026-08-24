@@ -17,22 +17,31 @@ function iconOf(code) {
   return `<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">${body}</svg>`
 }
 
-// 六大技能模块（S3+ 起从后端 API 获取，含摸底成绩展示）
+// 六大技能模块（按个性化学习路径排序）
 const modules = ref([])
 
 onMounted(async () => {
   try {
-    const data = await client.get('/modules')
-    modules.value = data
+    const [data, path] = await Promise.all([
+      client.get('/modules'),
+      client.get('/learning-path').catch(() => ({ module_codes: [] })),
+    ])
+    const pathCodes = path.module_codes || []
+    const byCode = {}
+    data.forEach((m) => { byCode[m.code] = m })
+    // 按学习路径排序，缺失的模块追加到末尾
+    const ordered = pathCodes.map((c) => byCode[c]).filter(Boolean)
+    data.forEach((m) => { if (!pathCodes.includes(m.code)) ordered.push(m) })
+    modules.value = ordered
   } catch {
     // 骨架阶段：接口未实现时使用静态占位
     modules.value = [
-      { code: 'recruitment', name: '招聘与面试', description: '岗位需求分析、简历筛选、结构化面试、录用决策', status: 'content-ready' },
-      { code: 'labor-law', name: '劳动法与合规', description: '劳动合同、工时加班、解除终止、争议处理', status: 'pending' },
-      { code: 'performance', name: '绩效管理', description: 'KPI与OKR、绩效面谈、评估流程设计', status: 'pending' },
-      { code: 'compensation', name: '薪酬福利', description: '薪酬结构设计、岗位价值评估、福利体系', status: 'pending' },
-      { code: 'employee-relations', name: '员工关系', description: '入职管理、沟通与冲突、离职面谈', status: 'pending' },
-      { code: 'training', name: '培训与人才发展', description: '培训需求分析、计划制定、人才梯队', status: 'pending' },
+      { code: 'recruitment', name: '招聘与面试', description: '岗位需求分析、简历筛选、结构化面试、录用决策' },
+      { code: 'performance', name: '绩效管理', description: 'KPI与OKR、绩效面谈、评估流程设计' },
+      { code: 'compensation', name: '薪酬福利', description: '薪酬结构设计、岗位价值评估、福利体系' },
+      { code: 'employee-relations', name: '员工关系', description: '入职管理、沟通与冲突、离职面谈' },
+      { code: 'training', name: '培训与人才发展', description: '培训需求分析、计划制定、人才梯队' },
+      { code: 'labor-law', name: '劳动法与合规', description: '劳动合同、工时加班、解除终止、争议处理' },
     ]
   }
 })
@@ -44,15 +53,16 @@ onMounted(async () => {
       <h1>技能模块</h1>
       <span class="head-bar red"></span>
     </div>
-    <p class="tip">选择模块开始学习：先学讲解，再做训练，最后参加模块考核。</p>
+    <p class="tip">按你的学习路径学习：先学讲解，再做训练，最后参加模块考核。可在「教学任务」页自定义学习顺序。</p>
 
     <div class="grid">
       <RouterLink
-        v-for="m in modules"
+        v-for="(m, i) in modules"
         :key="m.code"
         :to="`/modules/${m.code}`"
         class="mcard"
       >
+        <div class="step-no">{{ i + 1 }}</div>
         <div class="icon" v-html="iconOf(m.code)"></div>
         <h3>{{ m.name }}</h3>
         <p>{{ m.description }}</p>
@@ -79,6 +89,7 @@ onMounted(async () => {
   box-shadow: var(--shadow-lg);
   padding: 22px; text-decoration: none; color: inherit;
   transition: transform 100ms linear, box-shadow 100ms linear;
+  position: relative;
 }
 .mcard:hover {
   transform: translate(3px, 3px);
@@ -87,6 +98,14 @@ onMounted(async () => {
 .mcard:active {
   transform: translate(5px, 5px);
   box-shadow: none;
+}
+.step-no {
+  position: absolute; top: 14px; right: 14px;
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 30px; height: 30px;
+  background: var(--sov-black); color: var(--sov-paper);
+  font-size: 15px; font-weight: 900;
+  border: 3px solid var(--sov-black);
 }
 /* 线稿图标：无背景，黑色描边 */
 .icon {

@@ -7,7 +7,7 @@
 """
 
 # ============================================================
-# 六大技能模块
+# 六大技能模块（默认学习顺序：招聘→绩效→薪酬→员工关系→培训→劳动法）
 # ============================================================
 MODULES = [
     {
@@ -18,38 +18,38 @@ MODULES = [
         "sort_order": 1,
     },
     {
-        "code": "labor-law",
-        "name": "劳动法与合规",
-        "icon": "⚖️",
-        "description": "劳动合同、工时休假、解除终止与劳动争议处理等劳动法合规要点。",
-        "sort_order": 2,
-    },
-    {
         "code": "performance",
         "name": "绩效管理",
         "icon": "📊",
         "description": "KPI/OKR 设定、绩效面谈与评估流程设计的系统方法。",
-        "sort_order": 3,
+        "sort_order": 2,
     },
     {
         "code": "compensation",
         "name": "薪酬福利",
         "icon": "💰",
         "description": "薪酬结构设计、岗位价值评估与福利体系规划。",
-        "sort_order": 4,
+        "sort_order": 3,
     },
     {
         "code": "employee-relations",
         "name": "员工关系",
         "icon": "🤝",
         "description": "员工入职管理、沟通协调、冲突处理与离职管理的全生命周期关系维护。",
-        "sort_order": 5,
+        "sort_order": 4,
     },
     {
         "code": "training",
         "name": "培训与人才发展",
         "icon": "📚",
         "description": "培训需求分析、培训计划制定与人才梯队建设。",
+        "sort_order": 5,
+    },
+    {
+        "code": "labor-law",
+        "name": "劳动法与合规",
+        "icon": "⚖️",
+        "description": "劳动合同、工时休假、解除终止与劳动争议处理等劳动法合规要点。",
         "sort_order": 6,
     },
 ]

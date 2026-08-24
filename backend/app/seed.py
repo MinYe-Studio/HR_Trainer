@@ -94,6 +94,9 @@ def _upsert_exam_paper(db, module_id, exam, paper_title=None):
 
 def _seed_module_dict(db, data: dict) -> None:
     """从模块字典（JSON）播种完整模块内容。"""
+    # 排序优先级：JSON 显式指定 > MODULES 规范排序
+    canonical = next((m for m in MODULES if m["code"] == data["code"]), None)
+    sort_order = data.get("sort_order", canonical["sort_order"] if canonical else 0)
     mod = _upsert_module(
         db,
         {
@@ -101,7 +104,7 @@ def _seed_module_dict(db, data: dict) -> None:
             "name": data["name"],
             "icon": data.get("icon", ""),
             "description": data.get("description", ""),
-            "sort_order": data.get("sort_order", 0),
+            "sort_order": sort_order,
         },
     )
     for idx, ch in enumerate(data.get("chapters", [])):

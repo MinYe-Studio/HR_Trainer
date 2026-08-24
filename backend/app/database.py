@@ -29,6 +29,7 @@ def apply_migrations() -> None:
     """启动时执行的轻量迁移。"""
     _ensure_column("exam_records", "duration_seconds", "INTEGER DEFAULT 0")
     _ensure_column("exam_records", "question_ids", "JSON")
+    _ensure_column("users", "learning_path", "JSON")
 
 
 def get_db():
