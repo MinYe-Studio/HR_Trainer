@@ -163,6 +163,13 @@ const fmtDuration = (s) => {
 .hint { color: var(--sov-brown); font-weight: 700; }
 
 .result-bar { display: flex; align-items: center; gap: 20px; padding: 22px 24px; margin-bottom: 20px; flex-wrap: wrap; }
+@media (max-width: 720px) {
+  .result-bar { padding: 16px 14px; }
+  .result-score .big { font-size: 44px; }
+  .fb-item { padding: 14px 12px; }
+  .fb-kp { flex-direction: column; align-items: flex-start; }
+  .curve-card { padding: 14px 12px; }
+}
 .result-bar.pass { border-top: 8px solid var(--sov-green-dark, #00a074); }
 .result-bar.fail { border-top: 8px solid var(--sov-red); }
 .result-score { display: flex; align-items: baseline; gap: 4px; }

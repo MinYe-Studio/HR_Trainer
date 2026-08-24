@@ -256,6 +256,15 @@ function reset() {
 .result-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
 .qcard { padding: 26px; margin-bottom: 20px; }
+@media (max-width: 720px) {
+  .qcard { padding: 14px 12px; }
+  .head h1 { font-size: 19px; }
+  .result-bar { padding: 16px 14px; }
+  .result-score .big { font-size: 44px; }
+  .question { padding: 12px 0; }
+  .fb-item { padding: 14px 12px; }
+  .fb-kp { flex-direction: column; align-items: flex-start; }
+}
 .sec-title {
   margin: 0 0 14px; font-size: 17px;
   border-bottom: 4px solid var(--sov-black);

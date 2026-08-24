@@ -185,6 +185,12 @@ async function submit() {
 .rules p { margin: 0; font-weight: 700; font-size: 13.5px; }
 
 .qcard { padding: 26px; }
+@media (max-width: 720px) {
+  .qcard { padding: 14px 12px; }
+  .head h1 { font-size: 19px; }
+  .rules { padding: 10px 12px; }
+  .question { padding: 12px 0; }
+}
 .sec-title {
   margin: 0 0 14px; font-size: 16px;
   border-bottom: 4px solid var(--sov-black); padding-bottom: 10px;

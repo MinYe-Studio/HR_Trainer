@@ -78,19 +78,19 @@ async function toggleComplete() {
 
       <div class="footer-bar">
         <button class="btn" :class="{ primary: !completed }" :disabled="saving" @click="toggleComplete">
-          <span>{{ saving ? '保存中...' : completed ? '取消完成标记' : '标记为已完成' }}</span>
+          <span>{{ saving ? '保存中...' : completed ? '取消完成标记' : '标记已完成' }}</span>
         </button>
         <RouterLink :to="`/modules/${code}/chapters/${chapter.id}/practice`" class="btn primary">
-          <span>本章训练 →</span>
+          <span>本章训练</span>
         </RouterLink>
         <RouterLink v-if="nextChapter" :to="`/modules/${code}/chapters/${nextChapter.id}`" class="btn">
-          <span>下一章：{{ nextChapter.title }} →</span>
+          <span>下一章</span>
         </RouterLink>
         <RouterLink :to="`/modules/${code}`" class="btn">
           <span>返回模块</span>
         </RouterLink>
-        <span v-if="completed" class="done-note">✓ 本章已学完</span>
       </div>
+      <p v-if="completed" class="done-note">✓ 本章已学完</p>
     </template>
   </div>
 </template>
@@ -101,9 +101,11 @@ async function toggleComplete() {
 .error { color: var(--sov-red); font-weight: 900; }
 .hint { color: var(--sov-brown); font-weight: 700; }
 
-.content-card { padding: 34px 36px; margin-bottom: 20px; }
-.footer-bar { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.content-card { padding: 34px 36px; margin-bottom: 16px; }
+.footer-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.footer-bar .btn { width: 100%; padding: 12px 8px; font-size: 13.5px; }
 .done-note {
+  margin: 10px 0 0; text-align: center;
   font-weight: 900; color: var(--sov-green-dark, #00a074);
   border: 3px solid var(--sov-black);
   background: var(--sov-paper);
@@ -111,7 +113,13 @@ async function toggleComplete() {
   font-size: 13px;
 }
 
+@media (min-width: 768px) {
+  .content-card { padding: 34px 36px; }
+  .footer-bar { grid-template-columns: repeat(4, auto); justify-content: start; }
+  .footer-bar .btn { width: auto; }
+}
+
 @media (max-width: 720px) {
-  .content-card { padding: 22px 18px; }
+  .content-card { padding: 18px 14px; }
 }
 </style>

@@ -15,19 +15,17 @@ onMounted(async () => {
     const pathCodes = path.module_codes || []
     const byCode = {}
     data.forEach((m) => { byCode[m.code] = m })
-    // 按学习路径排序，缺失的模块追加到末尾
     const ordered = pathCodes.map((c) => byCode[c]).filter(Boolean)
     data.forEach((m) => { if (!pathCodes.includes(m.code)) ordered.push(m) })
     modules.value = ordered
   } catch {
-    // 骨架阶段：接口未实现时使用静态占位
     modules.value = [
-      { code: 'recruitment', name: '招聘与面试', description: '岗位需求分析、简历筛选、结构化面试、录用决策' },
-      { code: 'performance', name: '绩效管理', description: 'KPI与OKR、绩效面谈、评估流程设计' },
-      { code: 'compensation', name: '薪酬福利', description: '薪酬结构设计、岗位价值评估、福利体系' },
-      { code: 'employee-relations', name: '员工关系', description: '入职管理、沟通与冲突、离职面谈' },
-      { code: 'training', name: '培训与人才发展', description: '培训需求分析、计划制定、人才梯队' },
-      { code: 'labor-law', name: '劳动法与合规', description: '劳动合同、工时加班、解除终止、争议处理' },
+      { code: 'recruitment', name: '招聘与面试' },
+      { code: 'performance', name: '绩效管理' },
+      { code: 'compensation', name: '薪酬福利' },
+      { code: 'employee-relations', name: '员工关系' },
+      { code: 'training', name: '培训与人才发展' },
+      { code: 'labor-law', name: '劳动法与合规' },
     ]
   }
 })
@@ -37,9 +35,9 @@ onMounted(async () => {
   <div class="modules">
     <div class="head">
       <h1>技能模块</h1>
-      <span class="head-bar red"></span>
+      <RouterLink to="/tasks" class="head-link">学习路径 ▸</RouterLink>
     </div>
-    <p class="tip">按你的学习路径学习：先学讲解，再做训练，最后参加模块考核。可在「教学任务」页自定义学习顺序。</p>
+    <p class="tip">按学习路径学习：讲解 → 训练 → 考核</p>
 
     <div class="grid">
       <RouterLink
@@ -48,61 +46,64 @@ onMounted(async () => {
         :to="`/modules/${m.code}`"
         class="mcard"
       >
-        <div class="step-no">{{ i + 1 }}</div>
-        <div class="icon" v-html="iconOf(m.code)"></div>
-        <h3>{{ m.name }}</h3>
-        <p>{{ m.description }}</p>
-        <span class="badge" :class="m.chapters?.length ? 'red' : 'black'">
-          {{ m.chapters?.length ? '内容已就绪' : '内容建设中' }}
-        </span>
+        <span class="step">{{ i + 1 }}</span>
+        <div class="icon" v-html="iconOf(m.code, 24)"></div>
+        <div class="minfo">
+          <h3>{{ m.name }}</h3>
+          <span class="cnt">{{ (m.chapters?.length || 0) }} 章</span>
+        </div>
       </RouterLink>
     </div>
   </div>
 </template>
 
 <style scoped>
-.modules h1 { margin: 0 0 4px; }
-.head { display: flex; align-items: center; gap: 12px; margin-bottom: 4px; }
-.head-bar { display: inline-block; width: 46px; height: 8px; border: 4px solid var(--sov-black); }
-.head-bar.red { background: var(--sov-red); }
-.tip { margin: 0 0 24px; color: var(--sov-brown); font-weight: 700; }
+.modules h1 { margin: 0; font-size: 20px; }
+.head { display: flex; align-items: center; justify-content: space-between; margin-bottom: 2px; }
+.head-link { font-size: 12.5px; font-weight: 900; color: var(--sov-red-dark); }
+.tip { margin: 0 0 12px; color: var(--sov-brown); font-size: 12px; font-weight: 700; }
 
-.grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; }
+/* 紧凑网格：一屏可容纳 6 个模块 */
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
 .mcard {
-  display: block; background: var(--sov-white);
-  border: 4px solid var(--sov-black);
-  border-radius: 0;
-  box-shadow: var(--shadow-lg);
-  padding: 22px; text-decoration: none; color: inherit;
-  transition: transform 100ms linear, box-shadow 100ms linear;
   position: relative;
-}
-.mcard:hover {
-  transform: translate(3px, 3px);
-  box-shadow: var(--shadow-sm);
-}
-.mcard:active {
-  transform: translate(5px, 5px);
-  box-shadow: none;
-}
-.step-no {
-  position: absolute; top: 14px; right: 14px;
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 30px; height: 30px;
-  background: var(--sov-black); color: var(--sov-paper);
-  font-size: 15px; font-weight: 900;
+  display: flex; align-items: center; gap: 10px;
+  background: var(--sov-white);
   border: 3px solid var(--sov-black);
+  border-radius: 0;
+  box-shadow: var(--shadow-sm);
+  padding: 12px;
+  text-decoration: none; color: inherit;
+  transition: transform 100ms linear, box-shadow 100ms linear;
 }
-/* 线稿图标：无背景，黑色描边 */
+.mcard:hover { transform: translate(2px, 2px); box-shadow: none; }
+.step {
+  position: absolute; top: -8px; left: 8px;
+  display: inline-flex; align-items: center; justify-content: center;
+  min-width: 22px; height: 22px; padding: 0 4px;
+  background: var(--sov-red); color: var(--sov-paper);
+  border: 2px solid var(--sov-black);
+  font-size: 11px; font-weight: 900;
+}
 .icon {
   display: inline-flex; align-items: center; justify-content: center;
-  width: 48px; height: 48px;
-  border: 4px solid var(--sov-black);
-  border-radius: 0;
+  width: 42px; height: 42px; flex-shrink: 0;
+  border: 3px solid var(--sov-black);
   color: var(--sov-black);
   background: transparent;
 }
 .icon :deep(svg) { display: block; }
-.mcard h3 { margin: 14px 0 6px; font-size: 18px; }
-.mcard p { margin: 0 0 16px; color: var(--sov-brown); font-size: 13px; line-height: 1.6; }
+.minfo { flex: 1; min-width: 0; }
+.minfo h3 { margin: 0; font-size: 13.5px; line-height: 1.3; }
+.cnt { font-size: 10.5px; font-weight: 900; color: var(--sov-brown); }
+
+@media (min-width: 768px) {
+  .grid { grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .mcard { padding: 16px; }
+  .minfo h3 { font-size: 15px; }
+}
 </style>

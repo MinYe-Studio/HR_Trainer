@@ -49,6 +49,13 @@ a:hover { color: var(--sov-red); }
 
 #app { min-height: 100vh; }
 
+/* 移动端：内容底部预留 Tab 栏 + Home 指示条空间 */
+@media (max-width: 767px) {
+  .main {
+    padding-bottom: calc(78px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
 /* ============================================================
    按钮：rounded-none + border-4 + 硬阴影 + Block Invasion
    ============================================================ */

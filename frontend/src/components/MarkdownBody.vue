@@ -100,4 +100,15 @@ const html = computed(() => marked.parse(props.content || ''))
   border-top: 4px solid var(--sov-black);
   margin: 22px 0;
 }
+
+/* 移动端阅读排版适配 */
+@media (max-width: 720px) {
+  .md-body { font-size: 14px; line-height: 1.8; }
+  .md-body :deep(h1) { font-size: 21px; margin: 0 0 14px; }
+  .md-body :deep(h2) { font-size: 17px; margin: 20px 0 10px; }
+  .md-body :deep(h3) { font-size: 15px; margin: 16px 0 8px; }
+  .md-body :deep(blockquote) { padding: 10px 12px; font-size: 13.5px; }
+  .md-body :deep(th), .md-body :deep(td) { padding: 6px 8px; font-size: 12.5px; }
+  .md-body :deep(table) { display: block; overflow-x: auto; white-space: nowrap; }
+}
 </style>
