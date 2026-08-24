@@ -372,12 +372,16 @@ export const localApi = {
       const moduleStatus = MODULES.map((m) => {
         const recs = state.examRecords.filter((r) => r.moduleCode === m.code)
         const latest = recs[recs.length - 1]
+        const chs = CHAPTERS.filter((c) => c.module_code === m.code)
+        const chDone = chs.filter((c) => state.progress[c.id]?.completed).length
         return {
           module_id: m.sort_order, code: m.code, name: m.name, icon: m.icon,
           exam_score: latest ? latest.score : null,
           exam_passed: latest ? latest.passed : false,
           exam_taken: !!latest,
           exam_at: latest ? latest.at : null,
+          chapters_completed: chDone,
+          chapters_total: chs.length,
         }
       })
       const placement = state.placementRecords[state.placementRecords.length - 1] || null

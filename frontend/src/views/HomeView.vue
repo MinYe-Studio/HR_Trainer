@@ -3,7 +3,7 @@ import { useUserStore } from '../stores/user'
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import client from '../api/client'
-import { iconOf } from '../utils/icons'
+import ModuleBadge from '../components/ModuleBadge.vue'
 
 const userStore = useUserStore()
 const router = useRouter()
@@ -58,6 +58,18 @@ onMounted(async () => {
 const passedModules = computed(() => {
   if (!stats.value) return []
   return stats.value.exams.module_status.filter((m) => m.exam_passed)
+})
+
+// 全部模块徽章（成长状态联动）
+const moduleBadges = computed(() => {
+  if (!stats.value) return []
+  return stats.value.exams.module_status.map((m) => ({
+    code: m.code,
+    name: m.name,
+    chaptersCompleted: m.chapters_completed || 0,
+    chaptersTotal: m.chapters_total || 0,
+    examPassed: m.exam_passed,
+  }))
 })
 
 // 时间问候
@@ -136,13 +148,23 @@ async function resetPath() {
         </div>
         <p v-if="passedModules.length" class="hero-cheer">🎉 已获 <b>{{ passedModules.length }}/6</b> 技能徽章，继续加油！</p>
       </div>
-      <!-- 考核通过徽章（右上角） -->
-      <div class="hero-badges">
-        <div v-for="m in passedModules" :key="m.module_id" class="achievement" :title="m.name">
-          <div class="ach-badge" v-html="iconOf(m.code, 22)"></div>
-          <span class="ach-check">✓</span>
-          <span class="ach-name">{{ m.name }}</span>
-        </div>
+      <!-- 徽章成长区（全部模块） -->
+      <div v-if="moduleBadges.length" class="hero-badges">
+        <RouterLink
+          v-for="b in moduleBadges"
+          :key="b.code"
+          :to="`/modules/${b.code}`"
+          class="achievement"
+        >
+          <ModuleBadge
+            :code="b.code"
+            :name="b.name"
+            :chapters-completed="b.chaptersCompleted"
+            :chapters-total="b.chaptersTotal"
+            :exam-passed="b.examPassed"
+          />
+          <span class="ach-name">{{ b.name }}</span>
+        </RouterLink>
       </div>
       <!-- 几何块面（右下角） -->
       <div class="hero-blocks">
@@ -282,33 +304,14 @@ async function resetPath() {
 .actions .btn { padding: 10px 24px; font-size: 14px; }
 
 .hero-badges {
-  position: absolute; top: 14px; right: 16px;
+  position: absolute; top: 14px; right: 14px;
   display: flex; align-items: flex-start; gap: 8px;
   flex-wrap: wrap; justify-content: flex-end;
-  max-width: 200px;
+  max-width: 210px;
 }
-.achievement { display: flex; flex-direction: column; align-items: center; gap: 3px; position: relative; }
-.ach-badge {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 42px; height: 42px;
-  background: var(--sov-gold);
-  border: 3px solid var(--sov-paper);
-  color: var(--sov-black);
-  box-shadow: var(--shadow-sm);
-  animation: ach-pop .5s ease-out;
-}
-@keyframes ach-pop {
-  0% { transform: scale(0); }
-  60% { transform: scale(1.25); }
-  100% { transform: scale(1); }
-}
-.ach-check {
-  position: absolute; top: -7px; right: -7px;
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 18px; height: 18px;
-  background: var(--sov-red); color: var(--sov-paper);
-  border: 2px solid var(--sov-paper);
-  font-size: 11px; font-weight: 900;
+.achievement {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+  text-decoration: none;
 }
 .ach-name {
   font-size: 9.5px; font-weight: 900;

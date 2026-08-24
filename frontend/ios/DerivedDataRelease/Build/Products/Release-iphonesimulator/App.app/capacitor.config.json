@@ -1,0 +1,9 @@
+{
+	"appId": "com.hrtrainer.app",
+	"appName": "HR技能训练营",
+	"webDir": "dist",
+	"server": {
+		"iosScheme": "http"
+	},
+	"packageClassList": []
+}

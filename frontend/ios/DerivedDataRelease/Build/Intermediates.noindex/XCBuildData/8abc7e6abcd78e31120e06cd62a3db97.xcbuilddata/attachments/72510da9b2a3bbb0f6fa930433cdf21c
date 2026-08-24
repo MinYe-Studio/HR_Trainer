@@ -1,0 +1,16 @@
+{
+  "" : {
+    "const-values" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/CapApp-SPM.build/Release-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM-primary.swiftconstvalues",
+    "dependencies" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/CapApp-SPM.build/Release-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM-primary.d",
+    "diagnostics" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/CapApp-SPM.build/Release-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM-primary.dia",
+    "emit-module-dependencies" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/CapApp-SPM.build/Release-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/CapApp-SPM.build/Release-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM-primary-emit-module.dia",
+    "pch" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/CapApp-SPM.build/Release-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/CapApp-SPM.build/Release-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM-primary.swiftdeps"
+  },
+  "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/App/CapApp-SPM/Sources/CapApp-SPM/CapApp-SPM.swift" : {
+    "index-unit-output-path" : "/CapApp-SPM.build/Release-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM.o",
+    "llvm-bc" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/CapApp-SPM.build/Release-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM.bc",
+    "object" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/CapApp-SPM.build/Release-iphonesimulator/CapApp-SPM.build/Objects-normal/arm64/CapApp-SPM.o"
+  }
+}

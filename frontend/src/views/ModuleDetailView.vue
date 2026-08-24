@@ -1,7 +1,8 @@
 <script setup>
-import { onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import { useRoute } from 'vue-router'
 import client from '../api/client'
+import ModuleBadge from '../components/ModuleBadge.vue'
 
 const route = useRoute()
 const module = ref(null)
@@ -33,6 +34,18 @@ onMounted(async () => {
 function isDone(ch) {
   return progress.value[ch.id]?.completed === true
 }
+
+// 徽章成长状态
+const badgeState = computed(() => {
+  const chs = module.value?.chapters || []
+  return {
+    code: route.params.code,
+    name: module.value?.name || '',
+    chaptersCompleted: chs.filter(isDone).length,
+    chaptersTotal: chs.length,
+    examPassed: !!examLatest.value?.passed,
+  }
+})
 </script>
 
 <template>
@@ -44,6 +57,15 @@ function isDone(ch) {
 
     <template v-if="module">
       <div class="card head-card">
+        <ModuleBadge
+          class="head-badge"
+          :code="badgeState.code"
+          :name="badgeState.name"
+          :chapters-completed="badgeState.chaptersCompleted"
+          :chapters-total="badgeState.chaptersTotal"
+          :exam-passed="badgeState.examPassed"
+          :size="64"
+        />
         <div class="head-inner">
           <h1>{{ module.name }}</h1>
           <p class="desc">{{ module.description }}</p>
@@ -102,12 +124,14 @@ function isDone(ch) {
 .hint { color: var(--sov-brown); font-weight: 700; }
 
 .head-card {
-  display: flex; align-items: flex-start; justify-content: space-between; gap: 20px;
-  padding: 26px; margin-bottom: 26px; flex-wrap: wrap;
+  display: flex; align-items: center; justify-content: space-between; gap: 16px;
+  padding: 20px; margin-bottom: 20px; flex-wrap: wrap;
 }
-.head-inner h1 { margin: 0 0 8px; font-size: 26px; }
-.desc { margin: 0; color: var(--sov-brown); font-weight: 700; max-width: 60ch; }
-.meta { display: flex; gap: 10px; flex-wrap: wrap; }
+.head-badge { flex-shrink: 0; }
+.head-inner { flex: 1; min-width: 200px; }
+.head-inner h1 { margin: 0 0 6px; font-size: 22px; }
+.desc { margin: 0; color: var(--sov-brown); font-weight: 700; max-width: 60ch; font-size: 13px; }
+.meta { display: flex; gap: 8px; flex-wrap: wrap; }
 
 .sec-title { margin: 0 0 16px; font-size: 18px; border-bottom: 4px solid var(--sov-black); padding-bottom: 8px; }
 .sec-title.inline { margin: 0 0 6px; display: inline-block; border-bottom: none; padding-bottom: 0; font-size: 20px; }

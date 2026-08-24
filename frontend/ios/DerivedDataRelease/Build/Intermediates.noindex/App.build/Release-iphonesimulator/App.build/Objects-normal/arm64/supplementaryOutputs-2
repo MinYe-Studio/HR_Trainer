@@ -1,0 +1,12 @@
+{
+  "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/App/App/AppDelegate.swift" : {
+    "abi-baseline-json" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/arm64/App.abi.json",
+    "const-values" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/arm64/App-primary.swiftconstvalues",
+    "dependencies" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/arm64/App-primary.d",
+    "diagnostics" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/arm64/App-primary.dia",
+    "objc-header" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/arm64/App-Swift.h",
+    "swiftdoc" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/arm64/App.swiftdoc",
+    "swiftmodule" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/arm64/App.swiftmodule",
+    "swiftsourceinfo" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/arm64/App.swiftsourceinfo"
+  }
+}

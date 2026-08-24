@@ -48,6 +48,14 @@ def get_stats(
         .order_by(models.SkillModule.sort_order)
         .all()
     )
+    # 用户章节进度（一次查询，供徽章联动）
+    user_progress = (
+        db.query(models.ChapterProgress)
+        .filter(models.ChapterProgress.user_id == current_user.id)
+        .all()
+    )
+    progress_by_chapter = {p.chapter_id: p for p in user_progress}
+
     module_status = []
     passed_codes = []
     for m in modules:
@@ -67,6 +75,18 @@ def get_stats(
                 .order_by(models.ExamRecord.id.desc())
                 .first()
             )
+        # 模块章节学习进度（徽章成长联动）
+        chs = (
+            db.query(models.Chapter)
+            .filter(models.Chapter.module_id == m.id)
+            .all()
+        )
+        ch_total = len(chs)
+        ch_done = 0
+        for c in chs:
+            p = progress_by_chapter.get(c.id)
+            if p and p.completed:
+                ch_done += 1
         if latest and latest.passed:
             passed_codes.append(m.code)
         module_status.append(
@@ -79,6 +99,8 @@ def get_stats(
                 "exam_passed": latest.passed if latest else False,
                 "exam_taken": latest is not None,
                 "exam_at": latest.submitted_at if latest else None,
+                "chapters_completed": ch_done,
+                "chapters_total": ch_total,
             }
         )
 

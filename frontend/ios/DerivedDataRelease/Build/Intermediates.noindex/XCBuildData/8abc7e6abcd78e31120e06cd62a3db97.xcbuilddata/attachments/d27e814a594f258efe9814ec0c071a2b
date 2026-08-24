@@ -1,0 +1,26 @@
+{
+  "" : {
+    "const-values" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/x86_64/App-primary.swiftconstvalues",
+    "dependencies" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/x86_64/App-primary.d",
+    "diagnostics" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/x86_64/App-primary.dia",
+    "emit-module-dependencies" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/x86_64/App-primary-emit-module.d",
+    "emit-module-diagnostics" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/x86_64/App-primary-emit-module.dia",
+    "pch" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/x86_64/App-primary-Bridging-header.pch",
+    "swift-dependencies" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/x86_64/App-primary.swiftdeps"
+  },
+  "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/App/App/AppDelegate.swift" : {
+    "index-unit-output-path" : "/App.build/Release-iphonesimulator/App.build/Objects-normal/x86_64/AppDelegate.o",
+    "llvm-bc" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/x86_64/AppDelegate.bc",
+    "object" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/x86_64/AppDelegate.o"
+  },
+  "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/App/App/SceneDelegate.swift" : {
+    "index-unit-output-path" : "/App.build/Release-iphonesimulator/App.build/Objects-normal/x86_64/SceneDelegate.o",
+    "llvm-bc" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/x86_64/SceneDelegate.bc",
+    "object" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/x86_64/SceneDelegate.o"
+  },
+  "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/DerivedSources/GeneratedAssetSymbols.swift" : {
+    "index-unit-output-path" : "/App.build/Release-iphonesimulator/App.build/Objects-normal/x86_64/GeneratedAssetSymbols.o",
+    "llvm-bc" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/x86_64/GeneratedAssetSymbols.bc",
+    "object" : "/Users/minye/Documents/DeepSeek_Harness/HR_Trainner/frontend/ios/DerivedDataRelease/Build/Intermediates.noindex/App.build/Release-iphonesimulator/App.build/Objects-normal/x86_64/GeneratedAssetSymbols.o"
+  }
+}
