@@ -78,7 +78,7 @@ npm run dev
 ```bash
 cd frontend
 npm install @capacitor/core @capacitor/cli @capacitor/ios
-./node_modules/.bin/cap sync ios   # 同步 Web 构建到 iOS 工程
+npm run build:ios                    # build + 添加UTF-8 BOM + cap sync（iOS中文修复）
 open ios/App/App.xcworkspace       # 在 Xcode 中运行（模拟器或真机）
 # 或命令行构建到模拟器：
 xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug \
@@ -87,8 +87,9 @@ xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug \
 ```
 
 - 单机模式无需后端：内容数据静态打包（`src/data/app-content.js`），学习数据存本机 localStorage，单用户免登录
-- 更新内容后重新打包：`cd backend && ../.venv/bin/python export_content.py && cd ../frontend && npm run build && ./node_modules/.bin/cap sync ios`
+- 更新内容后重新打包：`cd backend && ../.venv/bin/python export_content.py && cd ../frontend && npm run build:ios`
 - 单机模式回归测试：`cd frontend && node test-local.mjs`（34 项）
+- **iOS 中文渲染两个必要修复**（已内置在 build:ios 中）：① 构建后为 JS 文件添加 UTF-8 BOM（WKWebView 对无 BOM 外部脚本按非 UTF-8 解码）；② 全局字体栈 `PingFang SC` 前置（`-apple-system` 开头的栈在 WKWebView 中 CJK 回退失败）
 
 ## 开发进度
 
