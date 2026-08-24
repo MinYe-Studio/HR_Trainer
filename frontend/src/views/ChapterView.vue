@@ -10,6 +10,7 @@ const code = route.params.code
 
 const chapter = ref(null)
 const moduleName = ref('')
+const moduleChapters = ref([])
 const completed = ref(false)
 const saving = ref(false)
 const loading = ref(true)
@@ -24,6 +25,7 @@ onMounted(async () => {
     ])
     chapter.value = ch
     moduleName.value = mod.name || ''
+    moduleChapters.value = mod.chapters || []
     completed.value = prog.chapter_progress?.[ch.id]?.completed === true
   } catch (e) {
     error.value = e.response?.data?.detail || '章节加载失败'
@@ -32,8 +34,13 @@ onMounted(async () => {
   }
 })
 
-const nextChapterId = computed(() => {
-  return null // 下一章导航由模块内章节顺序决定，S7 完善
+// 下一章导航
+const nextChapter = computed(() => {
+  if (!chapter.value || !moduleChapters.value.length) return null
+  const idx = moduleChapters.value.findIndex((c) => c.id === chapter.value.id)
+  return idx >= 0 && idx < moduleChapters.value.length - 1
+    ? moduleChapters.value[idx + 1]
+    : null
 })
 
 async function toggleComplete() {
@@ -72,6 +79,9 @@ async function toggleComplete() {
         </button>
         <RouterLink :to="`/modules/${code}/chapters/${chapter.id}/practice`" class="btn primary">
           <span>本章训练 →</span>
+        </RouterLink>
+        <RouterLink v-if="nextChapter" :to="`/modules/${code}/chapters/${nextChapter.id}`" class="btn">
+          <span>下一章：{{ nextChapter.title }} →</span>
         </RouterLink>
         <RouterLink :to="`/modules/${code}`" class="btn">
           <span>返回模块</span>
