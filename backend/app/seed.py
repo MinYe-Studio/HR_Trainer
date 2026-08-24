@@ -1,7 +1,13 @@
-"""种子数据脚本：建表 + 管理员账号 + 六大模块 + 摸底测试题 + 招聘模块课程内容。
+"""种子数据脚本：建表 + 管理员账号 + 六大模块 + 摸底测试题 + 各模块课程内容。
 
 用法：python -m app.seed
+内容来源：
+- content_data.py（招聘与面试模块 + 摸底题）
+- content/module_*.json（S8 起其他模块，由子代理/外部编写）
 """
+import json
+from pathlib import Path
+
 from .content_data import MODULES, PLACEMENT_QUESTIONS, RECRUITMENT
 from .database import Base, SessionLocal, engine
 from . import models  # noqa: F401
@@ -56,6 +62,100 @@ def _add_questions(db, questions, module, category, chapter=None, start_order=0)
         print(f"    [新增] {category} 题库 +{added} 题")
 
 
+def _upsert_exam_paper(db, module_id, exam, paper_title=None):
+    """幂等：按模块+标题查重考核卷。"""
+    title = exam.get("title") or paper_title
+    paper = (
+        db.query(models.ExamPaper)
+        .filter(
+            models.ExamPaper.module_id == module_id,
+            models.ExamPaper.title == title,
+        )
+        .first()
+    )
+    if not paper:
+        paper = models.ExamPaper(
+            module_id=module_id,
+            title=title,
+            description=exam.get("description", ""),
+            pass_score=exam.get("pass_score", 100),
+            duration_minutes=exam.get("duration_minutes", 15),
+        )
+        db.add(paper)
+        db.flush()
+        print(f"  [考核] 新增: {title}")
+    else:
+        paper.description = exam.get("description", paper.description or "")
+        paper.pass_score = exam.get("pass_score", paper.pass_score or 100)
+        paper.duration_minutes = exam.get("duration_minutes", paper.duration_minutes or 15)
+        print(f"  [考核] 已存在，信息已同步: {title}")
+    return paper
+
+
+def _seed_module_dict(db, data: dict) -> None:
+    """从模块字典（JSON）播种完整模块内容。"""
+    mod = _upsert_module(
+        db,
+        {
+            "code": data["code"],
+            "name": data["name"],
+            "icon": data.get("icon", ""),
+            "description": data.get("description", ""),
+            "sort_order": data.get("sort_order", 0),
+        },
+    )
+    for idx, ch in enumerate(data.get("chapters", [])):
+        chapter = (
+            db.query(models.Chapter)
+            .filter(
+                models.Chapter.module_id == mod.id,
+                models.Chapter.title == ch["title"],
+            )
+            .first()
+        )
+        if not chapter:
+            chapter = models.Chapter(
+                module_id=mod.id,
+                title=ch["title"],
+                summary=ch.get("summary", ""),
+                content=ch.get("content", ""),
+                sort_order=idx,
+            )
+            db.add(chapter)
+            db.flush()
+            print(f"  [章节] 新增: {ch['title']}")
+        else:
+            chapter.summary = ch.get("summary", chapter.summary or "")
+            chapter.content = ch.get("content", chapter.content or "")
+            chapter.sort_order = idx
+            print(f"  [章节] 已存在，内容已同步: {ch['title']}")
+        _add_questions(db, ch.get("questions", []), mod, category="practice", chapter=chapter)
+        if ch.get("case_questions"):
+            _add_questions(db, ch["case_questions"], mod, category="practice_case", chapter=chapter, start_order=100)
+
+    exam = data.get("exam")
+    if exam:
+        paper = _upsert_exam_paper(db, mod.id, exam)
+        _add_questions(db, exam.get("questions", []), mod, category="exam")
+        if exam.get("case_questions"):
+            _add_questions(db, exam["case_questions"], mod, category="exam_case", start_order=100)
+
+
+def _seed_json_modules(db) -> None:
+    """播种 backend/content/ 目录下的模块 JSON 文件。"""
+    content_dir = Path(__file__).resolve().parent.parent / "content"
+    if not content_dir.exists():
+        return
+    for f in sorted(content_dir.glob("module_*.json")):
+        try:
+            data = json.loads(f.read_text(encoding="utf-8"))
+        except json.JSONDecodeError as e:
+            print(f"  ⚠️ 跳过 {f.name}：JSON 解析失败 {e}")
+            continue
+        print(f"[seed] 写入模块: {data.get('name')} ({f.name})")
+        _seed_module_dict(db, data)
+
+
 def seed() -> None:
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
@@ -90,80 +190,11 @@ def seed() -> None:
 
         # ---- 招聘与面试模块完整内容 ----
         print("[seed] 写入招聘与面试模块课程...")
-        rec_mod = modules["recruitment"]
-        for ch in RECRUITMENT["chapters"]:
-            # 幂等：按模块+标题查重
-            chapter = (
-                db.query(models.Chapter)
-                .filter(
-                    models.Chapter.module_id == rec_mod.id,
-                    models.Chapter.title == ch["title"],
-                )
-                .first()
-            )
-            if not chapter:
-                chapter = models.Chapter(
-                    module_id=rec_mod.id,
-                    title=ch["title"],
-                    summary=ch["summary"],
-                    content=ch["content"],
-                    sort_order=RECRUITMENT["chapters"].index(ch),
-                )
-                db.add(chapter)
-                db.flush()
-                print(f"  [章节] 新增: {ch['title']}")
-            else:
-                # 已存在：同步更新概要/内容/顺序（保留题目）
-                chapter.summary = ch["summary"]
-                chapter.content = ch["content"]
-                chapter.sort_order = RECRUITMENT["chapters"].index(ch)
-                print(f"  [章节] 已存在，内容已同步: {ch['title']}")
-            _add_questions(db, ch["questions"], rec_mod, category="practice", chapter=chapter)
-            if ch.get("case_questions"):
-                _add_questions(
-                    db,
-                    ch["case_questions"],
-                    rec_mod,
-                    category="practice_case",
-                    chapter=chapter,
-                    start_order=100,
-                )
+        rec_meta = next(m for m in MODULES if m["code"] == "recruitment")
+        _seed_module_dict(db, {**rec_meta, **RECRUITMENT})
 
-        exam = RECRUITMENT["exam"]
-        # 幂等：按模块+标题查重
-        paper = (
-            db.query(models.ExamPaper)
-            .filter(
-                models.ExamPaper.module_id == rec_mod.id,
-                models.ExamPaper.title == exam["title"],
-            )
-            .first()
-        )
-        if not paper:
-            paper = models.ExamPaper(
-                module_id=rec_mod.id,
-                title=exam["title"],
-                description=exam["description"],
-                pass_score=exam["pass_score"],
-                duration_minutes=exam["duration_minutes"],
-            )
-            db.add(paper)
-            db.flush()
-            print(f"  [考核] 新增: {exam['title']}")
-        else:
-            paper.description = exam["description"]
-            paper.pass_score = exam["pass_score"]
-            paper.duration_minutes = exam["duration_minutes"]
-            print(f"  [考核] 已存在，信息已同步: {exam['title']}")
-        _add_questions(db, exam["questions"], rec_mod, category="exam")
-        if exam.get("case_questions"):
-            _add_questions(
-                db,
-                exam["case_questions"],
-                rec_mod,
-                category="exam_case",
-                start_order=100,
-            )
+        # ---- 其他模块（JSON 文件，S8）----
+        _seed_json_modules(db)
 
         db.commit()
         print("[seed] 完成 ✅")

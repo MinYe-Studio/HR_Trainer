@@ -56,8 +56,8 @@ onMounted(async () => {
         <div class="icon" v-html="iconOf(m.code)"></div>
         <h3>{{ m.name }}</h3>
         <p>{{ m.description }}</p>
-        <span class="badge" :class="m.status === 'content-ready' ? 'red' : 'black'">
-          {{ m.status === 'content-ready' ? '内容已就绪' : '内容建设中' }}
+        <span class="badge" :class="m.chapters?.length ? 'red' : 'black'">
+          {{ m.chapters?.length ? '内容已就绪' : '内容建设中' }}
         </span>
       </RouterLink>
     </div>
