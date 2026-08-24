@@ -31,7 +31,9 @@ const showFill = computed(() => level.value >= 3)
 </script>
 
 <template>
+  <!-- 未学习（0 章）不展示 -->
   <div
+    v-if="level >= 1"
     class="mbadge"
     :class="['lv' + level]"
     :style="{ width: size + 'px', height: size + 'px' }"
@@ -39,7 +41,6 @@ const showFill = computed(() => level.value >= 3)
   >
     <span v-if="showIcon" class="mb-icon" v-html="iconOf(code, Math.round(size * 0.5))"></span>
     <span v-if="level >= 4" class="mb-check">✓</span>
-    <span v-if="level === 0" class="mb-lock">?</span>
   </div>
 </template>
 
@@ -53,16 +54,6 @@ const showFill = computed(() => level.value >= 3)
 }
 .mb-icon { display: inline-flex; align-items: center; justify-content: center; }
 .mb-icon :deep(svg) { display: block; }
-
-/* 0 未解锁：灰淡虚线框 */
-.lv0 {
-  border: 3px dashed var(--sov-border-strong, #c3d4dc);
-  background: rgba(255,255,255,.15);
-  opacity: .55;
-}
-.lv0 .mb-lock {
-  font-size: 12px; font-weight: 900; color: var(--sov-ink-3, #93a1b1);
-}
 
 /* 1 轮廓：纸色实线空壳 */
 .lv1 {

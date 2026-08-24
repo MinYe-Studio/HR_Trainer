@@ -60,16 +60,18 @@ const passedModules = computed(() => {
   return stats.value.exams.module_status.filter((m) => m.exam_passed)
 })
 
-// 全部模块徽章（成长状态联动）
+// 徽章区：只显示已开始学习的模块（≥1 章），未学习不展示
 const moduleBadges = computed(() => {
   if (!stats.value) return []
-  return stats.value.exams.module_status.map((m) => ({
-    code: m.code,
-    name: m.name,
-    chaptersCompleted: m.chapters_completed || 0,
-    chaptersTotal: m.chapters_total || 0,
-    examPassed: m.exam_passed,
-  }))
+  return stats.value.exams.module_status
+    .filter((m) => (m.chapters_completed || 0) >= 1 || m.exam_passed)
+    .map((m) => ({
+      code: m.code,
+      name: m.name,
+      chaptersCompleted: m.chapters_completed || 0,
+      chaptersTotal: m.chapters_total || 0,
+      examPassed: m.exam_passed,
+    }))
 })
 
 // 时间问候
@@ -148,13 +150,14 @@ async function resetPath() {
         </div>
         <p v-if="passedModules.length" class="hero-cheer">🎉 已获 <b>{{ passedModules.length }}/6</b> 技能徽章，继续加油！</p>
       </div>
-      <!-- 徽章成长区（全部模块） -->
+      <!-- 徽章成长区（仅已学习模块，右上角） -->
       <div v-if="moduleBadges.length" class="hero-badges">
         <RouterLink
           v-for="b in moduleBadges"
           :key="b.code"
           :to="`/modules/${b.code}`"
           class="achievement"
+          :title="b.name"
         >
           <ModuleBadge
             :code="b.code"
@@ -162,8 +165,8 @@ async function resetPath() {
             :chapters-completed="b.chaptersCompleted"
             :chapters-total="b.chaptersTotal"
             :exam-passed="b.examPassed"
+            :size="32"
           />
-          <span class="ach-name">{{ b.name }}</span>
         </RouterLink>
       </div>
       <!-- 几何块面（右下角） -->
@@ -304,22 +307,14 @@ async function resetPath() {
 .actions .btn { padding: 10px 24px; font-size: 14px; }
 
 .hero-badges {
-  position: absolute; top: 14px; right: 14px;
-  display: flex; align-items: flex-start; gap: 8px;
+  position: absolute; top: 12px; right: 12px;
+  display: flex; align-items: flex-start; gap: 6px;
   flex-wrap: wrap; justify-content: flex-end;
-  max-width: 210px;
+  max-width: 150px;
 }
 .achievement {
   display: flex; flex-direction: column; align-items: center; gap: 3px;
   text-decoration: none;
-}
-.ach-name {
-  font-size: 9.5px; font-weight: 900;
-  color: var(--sov-paper);
-  background: rgba(26, 26, 26, .7);
-  border: 2px solid var(--sov-paper);
-  padding: 1px 5px;
-  white-space: nowrap;
 }
 .hero-blocks { position: absolute; right: 20px; bottom: 16px; display: flex; gap: 6px; }
 .hero-blocks .blk {
