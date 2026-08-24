@@ -16,4 +16,18 @@ export default defineConfig({
       },
     },
   },
+  build: {
+    // iOS 单机版：禁用代码分割，产出单一 JS 包，便于内联进 index.html
+    // （解决 WKWebView 对外部 JS 文件中文编码识别错误的问题）
+    rolldownOptions: {
+      output: {
+        inlineDynamicImports: true,
+      },
+    },
+    rollupOptions: {
+      output: {
+        inlineDynamicImports: true,
+      },
+    },
+  },
 })
