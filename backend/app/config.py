@@ -15,5 +15,5 @@ SECRET_KEY = os.getenv("SECRET_KEY", "dev-secret-key-change-me-in-production")
 ALGORITHM = "HS256"
 TOKEN_EXPIRE_MINUTES = 60 * 24 * 7  # 7 天
 
-# 考核通过分数（百分制）
-EXAM_PASS_SCORE = 60
+# 考核通过分数（百分制，默认满分通过）
+EXAM_PASS_SCORE = 100
