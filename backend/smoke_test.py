@@ -104,6 +104,37 @@ def main():
         assert "chapter_progress" in p
     check("学习进度", t_progress)
 
+    # 6. 考核（随机组卷/判分/结果/曲线数据）
+    def t_exam():
+        token = api("POST", "/api/auth/login",
+                    body={"username": "admin", "password": "admin123"})["token"]
+        info = api("GET", "/api/modules/recruitment/exam", token=token)
+        assert info["pass_score"] == 100  # 满分通过线
+        qs = api("GET", "/api/modules/recruitment/exam/questions", token=token)
+        assert len(qs) == 10
+        assert sum(1 for q in qs if q["category"] == "exam_case") == 3  # 含案例题
+        res = api("POST", "/api/exam/submit", token=token, body={
+            "module_code": "recruitment",
+            "question_ids": [q["id"] for q in qs],
+            "answers": {}, "duration_seconds": 30})
+        assert res["score"] == 0 and res["passed"] is False  # 空答未通过
+        detail = api("GET", f"/api/exam/result/{res['exam_record_id']}", token=token)
+        assert len(detail["details"]) == 10
+        records = api("GET", "/api/exam/records?module_code=recruitment", token=token)
+        assert len(records) >= 1  # 曲线数据点
+    check("考核(随机组卷/判分/结果/曲线)", t_exam)
+
+    # 7. 统计与复习提醒
+    def t_stats():
+        token = api("POST", "/api/auth/login",
+                    body={"username": "admin", "password": "admin123"})["token"]
+        st = api("GET", "/api/stats", token=token)
+        assert st["chapters"]["total"] >= 5
+        assert len(st["exams"]["module_status"]) == 6
+        rev = api("GET", "/api/dashboard/review", token=token)
+        assert "reviews" in rev
+    check("统计仪表盘/复习提醒", t_stats)
+
     ok = sum(1 for _, ok, _ in results if ok)
     print(f"\n=== 通过 {ok}/{len(results)} 项 ===")
     if ok != len(results):

@@ -3,7 +3,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from .database import Base, engine, apply_migrations
-from .routers import auth, content, dashboard, exam, placement, practice, progress
+from .routers import auth, content, dashboard, exam, placement, practice, progress, stats
 from . import models  # noqa: F401  确保模型注册到 Base.metadata
 
 app = FastAPI(
@@ -31,6 +31,7 @@ app.include_router(progress.router, prefix="/api")
 app.include_router(practice.router, prefix="/api")
 app.include_router(exam.router, prefix="/api")
 app.include_router(dashboard.router, prefix="/api")
+app.include_router(stats.router, prefix="/api")
 
 
 @app.get("/api/health", tags=["系统"])

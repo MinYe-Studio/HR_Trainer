@@ -5,6 +5,7 @@ import client from '../api/client'
 
 const router = useRouter()
 const data = ref(null)
+const examStatus = ref({})
 const loading = ref(true)
 const error = ref('')
 
@@ -13,7 +14,16 @@ const levelText = { focus: '重点学习', consolidate: '巩固提升', express:
 
 onMounted(async () => {
   try {
-    data.value = await client.get('/placement/tasks')
+    const [tasks, st] = await Promise.all([
+      client.get('/placement/tasks'),
+      client.get('/stats').catch(() => null),
+    ])
+    data.value = tasks
+    const map = {}
+    ;(st?.exams?.module_status || []).forEach((m) => {
+      map[m.code] = m
+    })
+    examStatus.value = map
   } catch (e) {
     error.value = e.response?.data?.detail || '任务加载失败'
   } finally {
@@ -57,7 +67,10 @@ onMounted(async () => {
             <p class="action">{{ t.recommended_action }}</p>
             <div class="task-foot">
               <span class="score">摸底 {{ t.score }} 分</span>
-              <button class="btn mini" @click="router.push('/modules')">
+              <span v-if="examStatus[t.code]" class="badge" :class="examStatus[t.code].exam_passed ? 'black' : examStatus[t.code].exam_taken ? 'red' : 'gold'">
+                {{ examStatus[t.code].exam_passed ? '考核已通过 ✓' : examStatus[t.code].exam_taken ? `考核未通过 ${examStatus[t.code].exam_score}分` : '未考核' }}
+              </span>
+              <button class="btn mini" @click="router.push(`/modules/${t.code}`)">
                 <span>进入模块</span>
               </button>
             </div>

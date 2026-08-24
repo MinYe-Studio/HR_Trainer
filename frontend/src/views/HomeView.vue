@@ -14,14 +14,19 @@ const dismissed = sessionStorage.getItem('placement_banner_dismissed') === '1'
 // 遗忘曲线复习提醒
 const reviews = ref([])
 
+// 学习统计仪表盘
+const stats = ref(null)
+
 onMounted(async () => {
   try {
-    const [latest, rev] = await Promise.all([
+    const [latest, rev, st] = await Promise.all([
       client.get('/placement/latest'),
       client.get('/dashboard/review').catch(() => ({ reviews: [] })),
+      client.get('/stats').catch(() => null),
     ])
     showBanner.value = !latest && !dismissed
     reviews.value = rev.reviews || []
+    stats.value = st
   } catch {
     // 网络异常时静默跳过引导
   }
@@ -93,6 +98,70 @@ async function markReviewed(code) {
       </div>
     </div>
 
+    <!-- 学习统计仪表盘 -->
+    <template v-if="stats">
+      <div class="dash-grid">
+        <div class="card dash-card">
+          <div class="dash-head">
+            <span class="dash-label">学习进度</span>
+            <span class="dash-value">{{ stats.chapters.percent }}%</span>
+          </div>
+          <div class="dash-bar">
+            <div class="dash-bar-fill" :style="{ width: stats.chapters.percent + '%' }"></div>
+          </div>
+          <p class="dash-sub">已完成 {{ stats.chapters.completed }} / {{ stats.chapters.total }} 章</p>
+        </div>
+
+        <div class="card dash-card">
+          <div class="dash-head">
+            <span class="dash-label">摸底测试</span>
+            <span class="dash-value">{{ stats.placement.taken ? stats.placement.total_score : '—' }}</span>
+          </div>
+          <div class="dash-bar full">
+            <div class="dash-bar-fill" :style="{ width: (stats.placement.taken ? stats.placement.total_score : 0) + '%' }"></div>
+          </div>
+          <p class="dash-sub">{{ stats.placement.taken ? '已参加入营摸底' : '尚未参加摸底测试' }}</p>
+        </div>
+
+        <div class="card dash-card">
+          <div class="dash-head">
+            <span class="dash-label">考核认证</span>
+            <span class="dash-value">{{ stats.exams.passed_count }}/6</span>
+          </div>
+          <div class="dash-bar full">
+            <div class="dash-bar-fill" :style="{ width: (stats.exams.passed_count / 6 * 100) + '%' }"></div>
+          </div>
+          <p class="dash-sub">{{ stats.exams.passed_count === 6 ? '全部模块已通过考核 🎉' : '通过考核的模块数' }}</p>
+        </div>
+
+        <div class="card dash-card">
+          <div class="dash-head">
+            <span class="dash-label">练习正确率</span>
+            <span class="dash-value">{{ stats.practice.accuracy ?? '—' }}{{ stats.practice.accuracy !== null ? '%' : '' }}</span>
+          </div>
+          <div class="dash-bar full">
+            <div class="dash-bar-fill" :style="{ width: (stats.practice.accuracy ?? 0) + '%' }"></div>
+          </div>
+          <p class="dash-sub">{{ stats.practice.records ? `已练 ${stats.practice.records} 次 / ${stats.practice.total_questions} 题` : '尚未开始训练' }}</p>
+        </div>
+      </div>
+
+      <!-- 模块考核状态总览 -->
+      <div class="card status-card">
+        <h2 class="status-title">模块考核状态</h2>
+        <div class="status-grid">
+          <div v-for="m in stats.exams.module_status" :key="m.module_id" class="status-row">
+            <span class="status-name">{{ m.name }}</span>
+            <span v-if="m.exam_taken" class="badge" :class="m.exam_passed ? 'black' : 'red'">
+              {{ m.exam_passed ? `已通过 ${m.exam_score} 分` : `未通过 ${m.exam_score} 分` }}
+            </span>
+            <span v-else class="badge gold">未考核</span>
+            <RouterLink :to="`/modules/${m.code}`" class="status-link">进入 →</RouterLink>
+          </div>
+        </div>
+      </div>
+    </template>
+
     <!-- Hero：纯黑底 + 莱茵生命网格构图 -->
     <section class="hero">
       <div class="hero-grid grid-pattern on-dark"></div>
@@ -113,7 +182,7 @@ async function markReviewed(code) {
     </section>
 
     <div class="notice">
-      <p>🚧 骨架阶段：此页面后续将展示学习进度统计与继续学习入口（S7 实现）。</p>
+      <p>🎉 欢迎使用 HR 技能训练营！完成各模块「讲解 → 训练 → 考核」闭环，通过全部 6 个模块考核即可完成全部课程。</p>
     </div>
   </div>
 </template>
@@ -185,6 +254,28 @@ async function markReviewed(code) {
 .rv-head h3 { margin: 0; font-size: 15.5px; }
 .rv-info { margin: 0 0 14px; color: var(--sov-brown); font-size: 13px; font-weight: 700; }
 .rv-actions { display: flex; gap: 10px; }
+
+/* 学习统计仪表盘 */
+.dash-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 14px; margin-bottom: 20px; }
+.dash-card { padding: 18px 20px; }
+.dash-head { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 10px; }
+.dash-label { font-size: 12.5px; font-weight: 900; text-transform: uppercase; letter-spacing: .08em; color: var(--sov-brown); }
+.dash-value { font-size: 26px; font-weight: 900; }
+.dash-bar { height: 14px; border: 3px solid var(--sov-black); background: var(--sov-white); }
+.dash-bar-fill { height: 100%; background: var(--sov-red); transition: width 300ms linear; }
+.dash-sub { margin: 8px 0 0; color: var(--sov-brown); font-size: 12.5px; font-weight: 700; }
+
+.status-card { padding: 22px 24px; margin-bottom: 20px; }
+.status-title { margin: 0 0 14px; font-size: 17px; border-bottom: 4px solid var(--sov-black); padding-bottom: 8px; }
+.status-grid { display: flex; flex-direction: column; gap: 8px; }
+.status-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px;
+  background: var(--sov-paper);
+  border: 2px solid var(--sov-black);
+}
+.status-name { flex: 1; font-weight: 900; font-size: 14px; }
+.status-link { font-size: 13px; font-weight: 900; text-transform: uppercase; letter-spacing: .04em; }
 
 .notice {
   padding: 16px 20px;
