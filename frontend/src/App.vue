@@ -1,36 +1,9 @@
 <script setup>
 import { useUserStore } from './stores/user'
-import { onMounted, ref } from 'vue'
+import { onMounted } from 'vue'
 
 const userStore = useUserStore()
 onMounted(() => userStore.tryRestore())
-
-// 昵称编辑
-const showEdit = ref(false)
-const nickname = ref('')
-const saving = ref(false)
-const editError = ref('')
-
-function openEdit() {
-  nickname.value = userStore.user?.nickname || ''
-  editError.value = ''
-  showEdit.value = true
-}
-async function saveNickname() {
-  if (!nickname.value.trim()) {
-    editError.value = '昵称不能为空'
-    return
-  }
-  saving.value = true
-  try {
-    await userStore.updateNickname(nickname.value.trim())
-    showEdit.value = false
-  } catch (e) {
-    editError.value = e.response?.data?.detail || '保存失败'
-  } finally {
-    saving.value = false
-  }
-}
 </script>
 
 <template>
@@ -46,10 +19,6 @@ async function saveNickname() {
         </span>
         <span class="brand-name">RHINE·HR</span>
       </RouterLink>
-      <div class="top-right">
-        <span class="nickname">{{ userStore.user?.nickname || userStore.user?.username }}</span>
-        <button class="edit-nick" title="修改昵称" @click="openEdit">✎</button>
-      </div>
     </header>
 
     <!-- 桌面端顶栏导航 -->
@@ -64,8 +33,7 @@ async function saveNickname() {
     </main>
 
     <!-- 移动端底部 Tab 导航（含安全区适配） -->
-    <nav class="tabbar">
-      <RouterLink to="/" class="tab">
+    <nav class="tabbar">      <RouterLink to="/" class="tab">
         <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
           <path d="M3 10.5 12 3l9 7.5"/><path d="M5 9.5V21h14V9.5"/>
         </svg>
@@ -84,21 +52,6 @@ async function saveNickname() {
         <span>教学任务</span>
       </RouterLink>
     </nav>
-
-    <!-- 修改昵称弹窗 -->
-    <div v-if="showEdit" class="modal-mask" @click.self="showEdit = false">
-      <div class="modal card">
-        <h2>修改昵称</h2>
-        <input class="input" v-model="nickname" placeholder="输入新昵称" maxlength="20" @keyup.enter="saveNickname" />
-        <p v-if="editError" class="modal-error">{{ editError }}</p>
-        <div class="modal-actions">
-          <button class="btn primary" :disabled="saving" @click="saveNickname">
-            <span>{{ saving ? '保存中...' : '保存' }}</span>
-          </button>
-          <button class="btn" @click="showEdit = false"><span>取消</span></button>
-        </div>
-      </div>
-    </div>
   </div>
 </template>
 
@@ -121,14 +74,6 @@ async function saveNickname() {
   border: 3px solid var(--sov-black);
 }
 .brand-name { font-weight: 900; font-size: 14px; text-transform: uppercase; letter-spacing: .05em; color: var(--sov-black); }
-.top-right { display: flex; align-items: center; gap: 8px; }
-.nickname { font-size: 12.5px; font-weight: 900; color: var(--sov-black); max-width: 120px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.edit-nick {
-  background: none; border: 2px solid var(--sov-black); border-radius: 0;
-  color: var(--sov-black); cursor: pointer;
-  width: 24px; height: 24px; font-size: 12px; line-height: 1;
-}
-.edit-nick:hover { background: var(--sov-gold); }
 
 /* 桌面端顶栏导航（≥768px 显示） */
 .desktop-nav {
