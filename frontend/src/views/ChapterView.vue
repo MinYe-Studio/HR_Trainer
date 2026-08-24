@@ -26,29 +26,50 @@ const totalPages = computed(() => pages.value.length)
 const isLastPage = computed(() => pageIdx.value === totalPages.value - 1)
 
 function splitPages(content) {
-  const blocks = content.split(/\n{2,}/).map((b) => b.trim()).filter(Boolean)
-  const result = []
-  let current = ''
   const isHeading = (b) => /^#{1,3}\s/.test(b)
-  for (const b of blocks) {
-    if (/^-{3,}$/.test(b)) continue // 跳过分隔线
-    if (current) {
-      // 与当前页合并（标题+标题+段落 → 一页）
-      current += '\n\n' + b
-      if (!isHeading(b)) {
-        result.push(current)
-        current = ''
-      }
+  const isQuote = (b) => b.startsWith('>')
+  const isHr = (b) => /^-{3,}$/.test(b)
+
+  // 1) 语义单元：标题开新单元；引用块（思考/自检）并入前一段；普通段落并入当前单元
+  const units = []
+  let cur = ''
+  for (const b of content.split(/\n{2,}/).map((x) => x.trim()).filter(Boolean)) {
+    if (isHr(b)) continue
+    if (isHeading(b)) {
+      if (cur) units.push(cur)
+      cur = b
+    } else if (isQuote(b) && cur) {
+      cur += '\n\n' + b
+    } else if (cur) {
+      cur += '\n\n' + b
     } else {
-      current = b
-      if (!isHeading(b)) {
-        result.push(current)
-        current = ''
-      }
+      cur = b
     }
   }
-  if (current) result.push(current)
-  return result
+  if (cur) units.push(cur)
+
+  // 2) 一级标题（H1）与下一单元合并，避免首页只有孤标题
+  if (units.length > 1 && /^#\s/.test(units[0])) {
+    units[1] = units[0] + '\n\n' + units[1]
+    units.shift()
+  }
+
+  // 3) 按阅读字数预算分页（约 550 字/页 → 一章 3~5 页）
+  const BUDGET = 550
+  const pages = []
+  let page = ''
+  for (const u of units) {
+    if (!page) {
+      page = u
+    } else if (page.length + u.length <= BUDGET) {
+      page += '\n\n' + u
+    } else {
+      pages.push(page)
+      page = u
+    }
+  }
+  if (page) pages.push(page)
+  return pages
 }
 
 onMounted(async () => {
@@ -87,6 +108,21 @@ function go(delta) {
   }
 }
 
+// 滑动手势翻页：左滑下一页，右滑上一页
+let touchX = null
+function onTouchStart(e) {
+  touchX = e.changedTouches[0].clientX
+}
+function onTouchEnd(e) {
+  if (touchX === null) return
+  const dx = e.changedTouches[0].clientX - touchX
+  if (Math.abs(dx) > 60) {
+    if (dx < 0) go(1)
+    else go(-1)
+  }
+  touchX = null
+}
+
 async function toggleComplete() {
   saving.value = true
   try {
@@ -115,8 +151,12 @@ async function toggleComplete() {
     <template v-if="chapter">
       <h1 class="ch-title">{{ chapter.title }}</h1>
 
-      <!-- 当前段 -->
-      <div class="card content-card">
+      <!-- 当前段（支持左右滑动翻页） -->
+      <div
+        class="card content-card"
+        @touchstart.passive="onTouchStart"
+        @touchend.passive="onTouchEnd"
+      >
         <MarkdownBody :content="pages[pageIdx] || ''" />
       </div>
 
@@ -130,6 +170,7 @@ async function toggleComplete() {
           <span>下一段</span>
         </button>
       </div>
+      <p v-if="totalPages > 1" class="swipe-hint">← 左右滑动翻页 →</p>
 
       <!-- 最后一页：操作方块 -->
       <div v-if="isLastPage && totalPages" class="footer-bar">
@@ -168,6 +209,7 @@ async function toggleComplete() {
 }
 .pager .btn { min-width: 96px; padding: 10px 8px; font-size: 13.5px; }
 .page-ind { font-size: 13px; font-weight: 900; color: var(--sov-brown); }
+.swipe-hint { margin: 0 0 12px; text-align: center; font-size: 11.5px; font-weight: 900; color: var(--sov-ink-3, #93a1b1); }
 
 /* 最后一页操作按钮（统一方块） */
 .footer-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
