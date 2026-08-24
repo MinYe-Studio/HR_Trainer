@@ -1,11 +1,15 @@
 # HR技能训练营
 
-集 **HR技能讲解 · 训练 · 考核** 于一体的 Web 应用（个人学习提升版）。
+集 **HR技能讲解 · 训练 · 考核** 于一体的应用（个人学习提升版）。
+
+- **Web 版**：FastAPI 后端 + Vue3 前端（含服务端题库/成绩/统计）
+- **iOS 单机版**：Capacitor 封装的离线应用（本地数据层替代后端，单用户免登录）
 
 ## 技术栈
 
-- **后端**：Python FastAPI + SQLAlchemy + SQLite（JWT 认证）
+- **Web 后端**：Python FastAPI + SQLAlchemy + SQLite（JWT 认证）
 - **前端**：Vue 3 + Vite + Vue Router + Pinia + Axios
+- **iOS 单机版**：Capacitor 8（`frontend/ios/`），内容数据静态打包（`frontend/src/data/app-content.js`），用户数据存 localStorage（`localApi.js`）
 - **视觉风格**：Constructivism 构成主义设计系统（苏维埃红 `#cc0000` / 纯黑 `#1a1a1a` / 泛黄纸色 `#f2e8d5` 严格三色体系 + 金星色点缀；硬边阴影、对角线构图、Block Invasion 按钮交互）
 
 架构设计借鉴了开源项目：[PlayEdu](https://github.com/PlayEdu/PlayEdu)（企业培训系统功能设计）、[yf-exam-lite](https://github.com/yf-team/yf-exam-lite)（培训+考试闭环）、[quizblitz](https://github.com/jabirmayar/quizblitz)（FastAPI 分层结构）。
@@ -68,6 +72,23 @@ npm run dev
 ```
 
 访问 http://127.0.0.1:5174（开发期 `/api` 请求自动代理到后端 8000 端口）
+
+### 3. iOS 单机版（可选）
+
+```bash
+cd frontend
+npm install @capacitor/core @capacitor/cli @capacitor/ios
+./node_modules/.bin/cap sync ios   # 同步 Web 构建到 iOS 工程
+open ios/App/App.xcworkspace       # 在 Xcode 中运行（模拟器或真机）
+# 或命令行构建到模拟器：
+xcodebuild -project ios/App/App.xcodeproj -scheme App -configuration Debug \
+  -sdk iphonesimulator -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  -derivedDataPath ios/DerivedData build
+```
+
+- 单机模式无需后端：内容数据静态打包（`src/data/app-content.js`），学习数据存本机 localStorage，单用户免登录
+- 更新内容后重新打包：`cd backend && ../.venv/bin/python export_content.py && cd ../frontend && npm run build && ./node_modules/.bin/cap sync ios`
+- 单机模式回归测试：`cd frontend && node test-local.mjs`（34 项）
 
 ## 开发进度
 
