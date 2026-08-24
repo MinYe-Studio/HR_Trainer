@@ -6,6 +6,7 @@ import client from '../api/client'
 
 const userStore = useUserStore()
 const router = useRouter()
+const error = ref('')
 
 // 入营测试引导横幅：未参加测试时显示，可关闭（本次会话内不再提示）
 const showBanner = ref(false)
@@ -17,20 +18,75 @@ const reviews = ref([])
 // 学习统计仪表盘
 const stats = ref(null)
 
+// 个性化学习路径（首页，常态收起；首次登录展开引导）
+const pathCodes = ref([])
+const pathExpanded = ref(!localStorage.getItem('path_prompt_done'))
+const pathFirstTime = ref(!localStorage.getItem('path_prompt_done'))
+const pathSaving = ref(false)
+const pathSaved = ref(false)
+const DEFAULT_PATH = ['recruitment', 'performance', 'compensation', 'employee-relations', 'training', 'labor-law']
+const moduleNames = {
+  recruitment: '招聘与面试',
+  performance: '绩效管理',
+  compensation: '薪酬福利',
+  'employee-relations': '员工关系',
+  training: '培训与人才发展',
+  'labor-law': '劳动法与合规',
+}
+
 onMounted(async () => {
   try {
-    const [latest, rev, st] = await Promise.all([
+    const [latest, rev, st, path] = await Promise.all([
       client.get('/placement/latest'),
       client.get('/dashboard/review').catch(() => ({ reviews: [] })),
       client.get('/stats').catch(() => null),
+      client.get('/learning-path').catch(() => ({ module_codes: DEFAULT_PATH })),
     ])
     showBanner.value = !latest && !dismissed
     reviews.value = rev.reviews || []
     stats.value = st
+    pathCodes.value = (path.module_codes && path.module_codes.length)
+      ? path.module_codes
+      : [...DEFAULT_PATH]
   } catch {
     // 网络异常时静默跳过引导
   }
 })
+
+function pathMove(idx, dir) {
+  const target = idx + dir
+  if (target < 0 || target >= pathCodes.value.length) return
+  const arr = [...pathCodes.value]
+  ;[arr[idx], arr[target]] = [arr[target], arr[idx]]
+  pathCodes.value = arr
+  pathSaved.value = false
+}
+
+async function savePath() {
+  pathSaving.value = true
+  try {
+    await client.put('/learning-path', { module_codes: pathCodes.value })
+    pathSaved.value = true
+    pathFirstTime.value = false
+    localStorage.setItem('path_prompt_done', '1')
+  } catch (e) {
+    error.value = e.response?.data?.detail || '保存失败'
+  } finally {
+    pathSaving.value = false
+  }
+}
+
+function skipPath() {
+  localStorage.setItem('path_prompt_done', '1')
+  pathFirstTime.value = false
+  pathExpanded.value = false
+}
+
+async function resetPath() {
+  pathCodes.value = [...DEFAULT_PATH]
+  pathSaved.value = false
+  await savePath()
+}
 
 function goPlacement() {
   sessionStorage.setItem('placement_banner_dismissed', '1')
@@ -72,6 +128,47 @@ async function markReviewed(code) {
         <span class="blk paper"></span>
       </div>
     </section>
+
+    <!-- 个性化学习路径（常态收起，可展开；首次登录展开引导） -->
+    <div class="card path-card" :class="{ 'first-open': pathExpanded }">
+      <div class="path-head" @click="pathExpanded = !pathExpanded">
+        <div class="path-title">
+          <h2>个性化学习路径</h2>
+          <span v-if="pathFirstTime && pathExpanded" class="badge red">NEW</span>
+        </div>
+        <span class="path-toggle">{{ pathExpanded ? '收起 ▾' : '展开 ▸' }}</span>
+      </div>
+
+      <div v-show="pathExpanded" class="path-body">
+        <p v-if="pathFirstTime" class="path-tip">首次使用：请选择你的模块学习顺序（默认：招聘→绩效→薪酬→员工关系→培训→劳动法），可随时修改。</p>
+        <p v-else class="path-tip">调整模块学习顺序，保存后技能模块页将按此顺序展示。</p>
+        <p v-if="error" class="modal-error">{{ error }}</p>
+        <p v-if="pathSaved" class="path-saved">✓ 学习路径已保存</p>
+
+        <div class="path-list">
+          <div v-for="(code, i) in pathCodes" :key="code" class="path-row">
+            <span class="path-no">{{ i + 1 }}</span>
+            <span class="path-name">{{ moduleNames[code] || code }}</span>
+            <div class="path-btns">
+              <button class="arrow" :disabled="i === 0" @click="pathMove(i, -1)" title="上移">↑</button>
+              <button class="arrow" :disabled="i === pathCodes.length - 1" @click="pathMove(i, 1)" title="下移">↓</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="path-actions">
+          <button class="btn primary small" :disabled="pathSaving" @click="savePath">
+            <span>{{ pathSaving ? '保存中...' : '保存路径' }}</span>
+          </button>
+          <button v-if="pathFirstTime" class="btn small" @click="skipPath">
+            <span>跳过，使用默认</span>
+          </button>
+          <button class="btn small" :disabled="pathSaving" @click="resetPath">
+            <span>恢复默认</span>
+          </button>
+        </div>
+      </div>
+    </div>
 
     <!-- 入营测试引导横幅（可关闭） -->
     <div v-if="showBanner" class="card banner">
@@ -242,6 +339,52 @@ async function markReviewed(code) {
 .banner-body p { margin: 0; font-weight: 700; font-size: 13.5px; }
 .banner-actions { display: flex; gap: 10px; }
 .btn.small { padding: 7px 16px; font-size: 13px; box-shadow: var(--shadow-sm); }
+
+/* 个性化学习路径（首页） */
+.path-card { margin-bottom: 20px; padding: 0; }
+.path-card.first-open { border-top: 8px solid var(--sov-red); }
+.path-head {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 22px; cursor: pointer;
+  user-select: none;
+}
+.path-title { display: flex; align-items: center; gap: 10px; }
+.path-title h2 { margin: 0; font-size: 17px; }
+.path-toggle { font-size: 13px; font-weight: 900; color: var(--sov-brown); }
+.path-body { padding: 0 22px 22px; border-top: 2px solid var(--sov-paper); padding-top: 14px; }
+.path-tip { margin: 0 0 10px; color: var(--sov-brown); font-size: 13px; font-weight: 700; }
+.modal-error { margin: 0 0 10px; color: var(--sov-red); font-size: 13px; font-weight: 900; }
+.path-saved {
+  display: inline-block; margin: 0 0 10px;
+  background: var(--sov-green-dark, #00a074); color: var(--sov-paper);
+  font-size: 12.5px; font-weight: 900; border: 3px solid var(--sov-black);
+  padding: 3px 10px;
+}
+.path-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 14px; }
+.path-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 8px 12px;
+  background: var(--sov-paper);
+  border: 2px solid var(--sov-black);
+}
+.path-no {
+  display: inline-flex; align-items: center; justify-content: center;
+  width: 26px; height: 26px; flex-shrink: 0;
+  background: var(--sov-black); color: var(--sov-paper);
+  font-size: 13px; font-weight: 900;
+}
+.path-name { flex: 1; font-weight: 900; font-size: 14px; }
+.path-btns { display: flex; gap: 6px; }
+.arrow {
+  width: 28px; height: 28px;
+  border: 2px solid var(--sov-black);
+  background: var(--sov-white);
+  color: var(--sov-black);
+  font-weight: 900; cursor: pointer;
+}
+.arrow:hover { background: var(--sov-gold); }
+.arrow:disabled { opacity: .35; cursor: not-allowed; background: var(--sov-white); }
+.path-actions { display: flex; gap: 10px; flex-wrap: wrap; }
 
 /* 遗忘曲线复习提醒 */
 .review-section { margin-bottom: 20px; }
