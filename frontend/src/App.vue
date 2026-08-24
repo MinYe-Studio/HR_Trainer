@@ -1,9 +1,36 @@
 <script setup>
 import { useUserStore } from './stores/user'
-import { onMounted } from 'vue'
+import { onMounted, ref } from 'vue'
 
 const userStore = useUserStore()
 onMounted(() => userStore.tryRestore())
+
+// 昵称编辑
+const showEdit = ref(false)
+const nickname = ref('')
+const saving = ref(false)
+const editError = ref('')
+
+function openEdit() {
+  nickname.value = userStore.user?.nickname || ''
+  editError.value = ''
+  showEdit.value = true
+}
+async function saveNickname() {
+  if (!nickname.value.trim()) {
+    editError.value = '昵称不能为空'
+    return
+  }
+  saving.value = true
+  try {
+    await userStore.updateNickname(nickname.value.trim())
+    showEdit.value = false
+  } catch (e) {
+    editError.value = e.response?.data?.detail || '保存失败'
+  } finally {
+    saving.value = false
+  }
+}
 </script>
 
 <template>
@@ -26,6 +53,7 @@ onMounted(() => userStore.tryRestore())
       </nav>
       <div class="user-area">
         <span class="nickname">{{ userStore.user?.nickname || userStore.user?.username }}</span>
+        <button class="edit-nick" title="修改昵称" @click="openEdit">✎</button>
         <button class="logout" @click="userStore.logout">退出</button>
       </div>
       <!-- 构成主义红色块面分割 -->
@@ -34,6 +62,21 @@ onMounted(() => userStore.tryRestore())
     <main class="main">
       <RouterView />
     </main>
+
+    <!-- 修改昵称弹窗 -->
+    <div v-if="showEdit" class="modal-mask" @click.self="showEdit = false">
+      <div class="modal card">
+        <h2>修改昵称</h2>
+        <input class="input" v-model="nickname" placeholder="输入新昵称" maxlength="20" @keyup.enter="saveNickname" />
+        <p v-if="editError" class="modal-error">{{ editError }}</p>
+        <div class="modal-actions">
+          <button class="btn primary" :disabled="saving" @click="saveNickname">
+            <span>{{ saving ? '保存中...' : '保存' }}</span>
+          </button>
+          <button class="btn" @click="showEdit = false"><span>取消</span></button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -86,6 +129,26 @@ onMounted(() => userStore.tryRestore())
 
 .user-area { display: flex; align-items: center; gap: 14px; }
 .nickname { font-size: 13px; font-weight: 900; color: var(--sov-black); }
+.edit-nick {
+  background: none; border: 2px solid var(--sov-black); border-radius: 0;
+  color: var(--sov-black); cursor: pointer;
+  width: 26px; height: 26px; font-size: 13px; line-height: 1;
+  transition: transform 100ms linear, background-color 100ms linear;
+}
+.edit-nick:hover { transform: translate(1px, 1px); background: var(--sov-gold); }
+
+/* 修改昵称弹窗 */
+.modal-mask {
+  position: fixed; inset: 0; z-index: 100;
+  background: rgba(26, 26, 26, .55);
+  display: flex; align-items: center; justify-content: center;
+  padding: 20px;
+}
+.modal { width: 360px; max-width: 94vw; padding: 28px 26px; }
+.modal h2 { margin: 0 0 16px; font-size: 18px; }
+.modal-error { margin: 10px 0 0; color: var(--sov-red); font-size: 13px; font-weight: 900; }
+.modal-actions { display: flex; gap: 12px; margin-top: 18px; }
+.modal-actions .btn { flex: 1; }
 .logout {
   background: none;
   border: 4px solid var(--sov-black);

@@ -17,6 +17,10 @@ class LoginRequest(BaseModel):
     password: str
 
 
+class UpdateProfileRequest(BaseModel):
+    nickname: str
+
+
 class UserOut(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 

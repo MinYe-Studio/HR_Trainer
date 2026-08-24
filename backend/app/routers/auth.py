@@ -64,3 +64,19 @@ def login(payload: schemas.LoginRequest, db: Session = Depends(get_db)):
 @router.get("/me", response_model=schemas.UserOut)
 def me(current_user: models.User = Depends(get_current_user)):
     return current_user
+
+
+@router.put("/me", response_model=schemas.UserOut)
+def update_profile(
+    payload: schemas.UpdateProfileRequest,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db),
+):
+    """修改用户昵称。"""
+    nickname = payload.nickname.strip()
+    if not nickname:
+        raise HTTPException(status_code=400, detail="昵称不能为空")
+    current_user.nickname = nickname
+    db.commit()
+    db.refresh(current_user)
+    return current_user

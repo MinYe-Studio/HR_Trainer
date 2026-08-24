@@ -32,6 +32,12 @@ export const useUserStore = defineStore('user', {
         })
       }
     },
+    async updateNickname(nickname) {
+      const user = await client.put('/auth/me', { nickname })
+      this.user = user
+      localStorage.setItem('user', JSON.stringify(user))
+      return user
+    },
     logout() {
       this.token = ''
       this.user = null
