@@ -9,6 +9,7 @@ const router = useRouter()
 const code = route.params.code
 
 const chapter = ref(null)
+const moduleName = ref('')
 const completed = ref(false)
 const saving = ref(false)
 const loading = ref(true)
@@ -16,11 +17,13 @@ const error = ref('')
 
 onMounted(async () => {
   try {
-    const [ch, prog] = await Promise.all([
+    const [ch, mod, prog] = await Promise.all([
       client.get(`/modules/${code}/chapters/${route.params.id}`),
+      client.get(`/modules/${code}`),
       client.get('/progress'),
     ])
     chapter.value = ch
+    moduleName.value = mod.name || ''
     completed.value = prog.chapter_progress?.[ch.id]?.completed === true
   } catch (e) {
     error.value = e.response?.data?.detail || '章节加载失败'
@@ -52,7 +55,7 @@ async function toggleComplete() {
 <template>
   <div class="chapter-page">
     <div class="crumbs">
-      <RouterLink :to="`/modules/${code}`" class="back">← {{ code === 'recruitment' ? '招聘与面试' : '返回模块' }}</RouterLink>
+      <RouterLink :to="`/modules/${code}`" class="back">← {{ moduleName || '返回模块' }}</RouterLink>
     </div>
 
     <p v-if="error" class="error">{{ error }}</p>
