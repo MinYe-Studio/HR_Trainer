@@ -122,6 +122,73 @@ class ExamRecordOut(BaseModel):
     submitted_at: datetime
 
 
+# ---------- 考核 ----------
+class ExamInfoOut(BaseModel):
+    paper_id: int
+    title: str
+    description: str
+    pass_score: int
+    duration_minutes: int
+    knowledge_count: int
+    case_count: int
+    total: int
+
+
+class ExamQuestionOut(QuestionOut):
+    """考核题（不含答案）。"""
+
+
+class ExamSubmitRequest(BaseModel):
+    module_code: str
+    question_ids: list[int]
+    answers: dict[str, list[str]]
+    duration_seconds: int = 0
+
+
+class ExamResult(BaseModel):
+    exam_record_id: int
+    module_id: int
+    module_code: str
+    module_name: str
+    score: int
+    passed: bool
+    pass_score: int
+    duration_seconds: int
+    chapter_auto_completed: bool = False
+    details: List[dict[str, Any]]
+
+
+class ExamRecordOut(BaseModel):
+    id: int
+    module_code: str
+    module_name: str
+    score: int
+    passed: bool
+    duration_seconds: int
+    submitted_at: datetime
+
+
+class ReviewItemOut(BaseModel):
+    module_id: int
+    code: str
+    name: str
+    icon: str = ""
+    last_pass_at: datetime
+    elapsed_days: int
+    due: bool
+    pending_reviews: int
+    next_interval_days: Optional[int]
+    next_review_at: Optional[datetime]
+
+
+class ReviewResponse(BaseModel):
+    reviews: List[ReviewItemOut]
+
+
+class ExamRecordOut2(ExamRecordOut):
+    """历史成绩（曲线用）。"""
+
+
 # ---------- 进度 ----------
 class ChapterCompleteRequest(BaseModel):
     chapter_id: int

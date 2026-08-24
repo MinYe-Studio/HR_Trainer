@@ -156,6 +156,14 @@ def seed() -> None:
             paper.duration_minutes = exam["duration_minutes"]
             print(f"  [考核] 已存在，信息已同步: {exam['title']}")
         _add_questions(db, exam["questions"], rec_mod, category="exam")
+        if exam.get("case_questions"):
+            _add_questions(
+                db,
+                exam["case_questions"],
+                rec_mod,
+                category="exam_case",
+                start_order=100,
+            )
 
         db.commit()
         print("[seed] 完成 ✅")

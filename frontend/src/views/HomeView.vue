@@ -11,10 +11,17 @@ const router = useRouter()
 const showBanner = ref(false)
 const dismissed = sessionStorage.getItem('placement_banner_dismissed') === '1'
 
+// 遗忘曲线复习提醒
+const reviews = ref([])
+
 onMounted(async () => {
   try {
-    const latest = await client.get('/placement/latest')
+    const [latest, rev] = await Promise.all([
+      client.get('/placement/latest'),
+      client.get('/dashboard/review').catch(() => ({ reviews: [] })),
+    ])
     showBanner.value = !latest && !dismissed
+    reviews.value = rev.reviews || []
   } catch {
     // 网络异常时静默跳过引导
   }
@@ -27,6 +34,16 @@ function goPlacement() {
 function dismissBanner() {
   sessionStorage.setItem('placement_banner_dismissed', '1')
   showBanner.value = false
+}
+
+async function markReviewed(code) {
+  try {
+    await client.post(`/dashboard/review/${code}/done`)
+    const rev = await client.get('/dashboard/review')
+    reviews.value = rev.reviews || []
+  } catch {
+    // 忽略
+  }
 }
 </script>
 
@@ -41,6 +58,38 @@ function dismissBanner() {
       <div class="banner-actions">
         <button class="btn primary small" @click="goPlacement"><span>去测试</span></button>
         <button class="btn small" @click="dismissBanner"><span>稍后再说</span></button>
+      </div>
+    </div>
+
+    <!-- 遗忘曲线复习提醒 -->
+    <div v-if="reviews.length" class="review-section">
+      <h2 class="review-title">遗忘曲线 · 复习提醒</h2>
+      <p class="review-tip">根据艾宾浩斯遗忘曲线（1/2/4/7/15/30 天间隔），以下模块需要巩固复习。</p>
+      <div class="review-grid">
+        <div
+          v-for="r in reviews"
+          :key="r.module_id"
+          class="card review-card"
+          :class="{ due: r.due }"
+        >
+          <div class="rv-head">
+            <h3>{{ r.name }}</h3>
+            <span class="badge" :class="r.due ? 'red' : 'gold'">
+              {{ r.due ? `待复习 ×${r.pending_reviews}` : `下次 ${r.next_interval_days} 天后` }}
+            </span>
+          </div>
+          <p class="rv-info">
+            {{ r.due ? `距上次考核通过 ${r.elapsed_days} 天，建议按遗忘曲线复习巩固` : `上次通过 ${r.elapsed_days} 天前，第 ${r.next_interval_days} 天复习` }}
+          </p>
+          <div class="rv-actions">
+            <RouterLink :to="`/modules/${r.code}`" class="btn small">
+              <span>去复习</span>
+            </RouterLink>
+            <button class="btn small" @click="markReviewed(r.code)">
+              <span>✓ 已复习打卡</span>
+            </button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -124,6 +173,18 @@ function dismissBanner() {
 .banner-body p { margin: 0; font-weight: 700; font-size: 13.5px; }
 .banner-actions { display: flex; gap: 10px; }
 .btn.small { padding: 7px 16px; font-size: 13px; box-shadow: var(--shadow-sm); }
+
+/* 遗忘曲线复习提醒 */
+.review-section { margin-bottom: 20px; }
+.review-title { margin: 0 0 4px; font-size: 18px; }
+.review-tip { margin: 0 0 14px; color: var(--sov-brown); font-size: 13px; font-weight: 700; }
+.review-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 14px; }
+.review-card { padding: 18px 20px; }
+.review-card.due { border-left: 10px solid var(--sov-red); }
+.rv-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; margin-bottom: 8px; }
+.rv-head h3 { margin: 0; font-size: 15.5px; }
+.rv-info { margin: 0 0 14px; color: var(--sov-brown); font-size: 13px; font-weight: 700; }
+.rv-actions { display: flex; gap: 10px; }
 
 .notice {
   padding: 16px 20px;

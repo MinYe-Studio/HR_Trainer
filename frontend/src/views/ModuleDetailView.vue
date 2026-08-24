@@ -6,17 +6,23 @@ import client from '../api/client'
 const route = useRoute()
 const module = ref(null)
 const progress = ref({})
+const examInfo = ref(null)
+const examLatest = ref(null)
 const loading = ref(true)
 const error = ref('')
 
 onMounted(async () => {
   try {
-    const [mod, prog] = await Promise.all([
-      client.get(`/modules/${route.params.code}`),
-      client.get('/progress'),
-    ])
+    const mod = await client.get(`/modules/${route.params.code}`)
     module.value = mod
+    const [prog, examInf, examLat] = await Promise.all([
+      client.get('/progress'),
+      client.get(`/modules/${route.params.code}/exam`).catch(() => null),
+      client.get(`/exam/latest?module_code=${route.params.code}`).catch(() => null),
+    ])
     progress.value = prog.chapter_progress || {}
+    examInfo.value = examInf
+    examLatest.value = examLat
   } catch (e) {
     error.value = e.response?.data?.detail || '模块加载失败'
   } finally {
@@ -68,6 +74,27 @@ function isDone(ch) {
           </div>
         </RouterLink>
       </div>
+
+      <!-- 模块考核卡片 -->
+      <div v-if="examInfo" class="card exam-card">
+        <div class="exam-head">
+          <div>
+            <h2 class="sec-title inline">模块考核</h2>
+            <p class="exam-desc">{{ examInfo.description }}</p>
+          </div>
+          <div class="exam-meta">
+            <span class="badge black">随机 {{ examInfo.knowledge_count >= 7 ? 7 : examInfo.knowledge_count }} 知识 + 3 案例</span>
+            <span class="badge gold">通过线 {{ examInfo.pass_score }} 分</span>
+            <span v-if="examLatest" class="badge" :class="examLatest.passed ? 'black' : 'red'">
+              最近 {{ examLatest.score }} 分 {{ examLatest.passed ? '通过' : '未通过' }}
+            </span>
+            <span v-else class="badge red">未考核</span>
+          </div>
+        </div>
+        <RouterLink :to="`/modules/${module.code}/exam`" class="btn primary">
+          <span>{{ examLatest ? '重新考核' : '去考核' }}</span>
+        </RouterLink>
+      </div>
     </template>
   </div>
 </template>
@@ -86,6 +113,14 @@ function isDone(ch) {
 .meta { display: flex; gap: 10px; flex-wrap: wrap; }
 
 .sec-title { margin: 0 0 16px; font-size: 18px; border-bottom: 4px solid var(--sov-black); padding-bottom: 8px; }
+.sec-title.inline { margin: 0 0 6px; display: inline-block; border-bottom: none; padding-bottom: 0; font-size: 20px; }
+
+/* 考核卡片 */
+.exam-card { padding: 22px 24px; margin-top: 26px; display: flex; align-items: center; justify-content: space-between; gap: 18px; flex-wrap: wrap; }
+.exam-card .btn { flex-shrink: 0; }
+.exam-head { flex: 1; min-width: 260px; }
+.exam-desc { margin: 0 0 10px; color: var(--sov-brown); font-size: 13.5px; font-weight: 700; }
+.exam-meta { display: flex; gap: 8px; flex-wrap: wrap; }
 .chapters { display: flex; flex-direction: column; gap: 14px; }
 .chapter {
   display: flex; gap: 16px; padding: 16px 18px;

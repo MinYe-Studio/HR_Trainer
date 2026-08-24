@@ -29,6 +29,7 @@ class User(Base):
     practice_records = relationship("PracticeRecord", back_populates="user")
     exam_records = relationship("ExamRecord", back_populates="user")
     placement_records = relationship("PlacementRecord", back_populates="user")
+    review_records = relationship("ReviewRecord", back_populates="user")
 
 
 class SkillModule(Base):
@@ -106,6 +107,8 @@ class ExamRecord(Base):
     score = Column(Integer, default=0)  # 百分制
     passed = Column(Boolean, default=False)
     answers = Column(JSON, default=dict)  # {question_id: [key,...]}
+    question_ids = Column(JSON, default=list)  # 本次试卷题目 ID（用于结果重算）
+    duration_seconds = Column(Integer, default=0)  # 答题耗时（秒）
     submitted_at = Column(DateTime, server_default=func.now())
 
     user = relationship("User", back_populates="exam_records")
@@ -154,3 +157,15 @@ class PlacementRecord(Base):
     created_at = Column(DateTime, server_default=func.now())
 
     user = relationship("User", back_populates="placement_records")
+
+
+class ReviewRecord(Base):
+    """遗忘曲线复习记录（艾宾浩斯间隔复习打卡）。"""
+    __tablename__ = "review_records"
+
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=False, index=True)
+    module_id = Column(Integer, ForeignKey("skill_modules.id"), nullable=False, index=True)
+    reviewed_at = Column(DateTime, server_default=func.now())
+
+    user = relationship("User", back_populates="review_records")

@@ -2,8 +2,8 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from .database import Base, engine
-from .routers import auth, content, placement, practice, progress
+from .database import Base, engine, apply_migrations
+from .routers import auth, content, dashboard, exam, placement, practice, progress
 from . import models  # noqa: F401  确保模型注册到 Base.metadata
 
 app = FastAPI(
@@ -20,7 +20,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# 骨架阶段：启动时自动建表（S2 起由 seed 脚本负责内容填充）
+# 骨架阶段：启动时自动建表 + 轻量迁移（S2 起由 seed 脚本负责内容填充）
+apply_migrations()
 Base.metadata.create_all(bind=engine)
 
 app.include_router(auth.router, prefix="/api")
@@ -28,6 +29,8 @@ app.include_router(placement.router, prefix="/api")
 app.include_router(content.router, prefix="/api")
 app.include_router(progress.router, prefix="/api")
 app.include_router(practice.router, prefix="/api")
+app.include_router(exam.router, prefix="/api")
+app.include_router(dashboard.router, prefix="/api")
 
 
 @app.get("/api/health", tags=["系统"])
