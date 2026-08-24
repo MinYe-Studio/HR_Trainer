@@ -54,6 +54,25 @@ async function markReviewed(code) {
 
 <template>
   <div class="home">
+    <!-- Hero：纯黑底 + 莱茵生命网格构图（置顶） -->
+    <section class="hero">
+      <div class="hero-grid grid-pattern on-dark"></div>
+      <div class="hero-content">
+        <h1>欢迎回来，<br />{{ userStore.user?.nickname || userStore.user?.username }}</h1>
+        <p class="hero-sub">系统学习六大 HR 核心技能 · 章节训练巩固 · 模块考核认证</p>
+        <div class="actions">
+          <RouterLink class="btn primary" to="/modules"><span>开始学习</span></RouterLink>
+          <RouterLink class="btn primary" to="/tasks"><span>教学任务</span></RouterLink>
+        </div>
+      </div>
+      <!-- 几何块面（右下角） -->
+      <div class="hero-blocks">
+        <span class="blk red"></span>
+        <span class="blk gold"></span>
+        <span class="blk paper"></span>
+      </div>
+    </section>
+
     <!-- 入营测试引导横幅（可关闭） -->
     <div v-if="showBanner" class="card banner">
       <div class="banner-body">
@@ -161,25 +180,6 @@ async function markReviewed(code) {
         </div>
       </div>
     </template>
-
-    <!-- Hero：纯黑底 + 莱茵生命网格构图 -->
-    <section class="hero">
-      <div class="hero-grid grid-pattern on-dark"></div>
-      <div class="hero-content">
-        <h1>欢迎回来，<br />{{ userStore.user?.nickname || userStore.user?.username }}</h1>
-        <p class="hero-sub">系统学习六大 HR 核心技能 · 章节训练巩固 · 模块考核认证</p>
-        <div class="actions">
-          <RouterLink class="btn primary" to="/modules"><span>开始学习</span></RouterLink>
-          <RouterLink class="btn primary" to="/tasks"><span>教学任务</span></RouterLink>
-        </div>
-      </div>
-      <!-- 几何块面（右下角） -->
-      <div class="hero-blocks">
-        <span class="blk red"></span>
-        <span class="blk gold"></span>
-        <span class="blk paper"></span>
-      </div>
-    </section>
 
     <div class="notice">
       <p>🎉 欢迎使用 HR 技能训练营！完成各模块「讲解 → 训练 → 考核」闭环，通过全部 6 个模块考核即可完成全部课程。</p>
