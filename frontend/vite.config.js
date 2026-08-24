@@ -3,6 +3,7 @@ import vue from '@vitejs/plugin-vue'
 
 // https://vite.dev/config/
 export default defineConfig({
+  base: './',  // 相对路径：兼容 GitHub Pages 子路径部署
   plugins: [vue()],
   server: {
     host: true,      // 同时监听 IPv4/IPv6，避免 localhost 解析差异
