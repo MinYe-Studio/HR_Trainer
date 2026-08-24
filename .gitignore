@@ -1,0 +1,15 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+backend/data/*.db
+
+# Node
+node_modules/
+.npm-cache/
+dist/
+frontend/dist/
+
+# 环境
+.env
+.DS_Store

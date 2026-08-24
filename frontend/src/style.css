@@ -1,0 +1,219 @@
+/* ============================================================
+   Constructivism 构成主义设计系统（严格三色体系）
+   - 苏维埃红 #cc0000  |  纯黑 #1a1a1a  |  泛黄纸色 #f2e8d5
+   - 金星色 #d4a843（点缀）  |  棕色 #8b4513（弱化）
+   禁止：圆角 / 渐变 / 柔和阴影 / 柔和字重 / 玻璃态 / 过多颜色
+   ============================================================ */
+:root {
+  --sov-red: #cc0000;
+  --sov-red-dark: #a80000;
+  --sov-black: #1a1a1a;
+  --sov-paper: #f2e8d5;
+  --sov-white: #ffffff;
+  --sov-gold: #d4a843;
+  --sov-brown: #8b4513;
+
+  /* 硬边阴影（版画效果） */
+  --shadow-sm: 2px 2px 0 #1a1a1a;
+  --shadow-md: 4px 4px 0 #1a1a1a;
+  --shadow-lg: 6px 6px 0 #1a1a1a;
+
+  --font-sans: -apple-system, BlinkMacSystemFont, 'PingFang SC', 'Hiragino Sans GB',
+    'Microsoft YaHei', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+}
+
+* { box-sizing: border-box; }
+
+html, body { margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.6;
+  color: var(--sov-black);
+  background: var(--sov-paper);
+  font-weight: 700;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4 {
+  color: var(--sov-black);
+  line-height: 1.25;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .02em;
+}
+
+a { color: var(--sov-red-dark); text-decoration: none; }
+a:hover { color: var(--sov-red); }
+
+#app { min-height: 100vh; }
+
+/* ============================================================
+   按钮：rounded-none + border-4 + 硬阴影 + Block Invasion
+   ============================================================ */
+.btn {
+  position: relative;
+  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border: 4px solid var(--sov-black);
+  border-radius: 0;
+  background: var(--sov-paper);
+  color: var(--sov-black);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .06em;
+  box-shadow: var(--shadow-md);
+  cursor: pointer;
+  transition: transform 100ms linear, box-shadow 100ms linear,
+    background-color 100ms linear, color 100ms linear;
+}
+/* Block Invasion：黑色/红色覆盖层从左横扫 */
+.btn::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: var(--sov-black);
+  transform: translateX(-100%);
+  transition: transform 100ms linear;
+  z-index: 0;
+}
+.btn > * { position: relative; z-index: 1; }
+/* Diagonal Aggression：hover 斜向位移，阴影收缩 */
+.btn:hover::before { transform: translateX(0); }
+.btn:hover {
+  transform: translate(3px, 3px);
+  box-shadow: var(--shadow-sm);
+  color: var(--sov-paper);
+}
+/* Soviet Reversal：active 配色翻转，阴影归零 */
+.btn:active {
+  background: var(--sov-black);
+  color: var(--sov-red);
+  box-shadow: none;
+  transform: translate(4px, 4px);
+}
+.btn:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: var(--shadow-md); }
+
+.btn.primary {
+  background: var(--sov-red);
+  border-color: var(--sov-black);
+  color: var(--sov-paper);
+}
+/* Block Invasion：白色覆盖层横扫 → hover 时红变白 */
+.btn.primary::before { background: var(--sov-white); }
+.btn.primary:hover { color: var(--sov-black); }
+.btn.primary:active { background: var(--sov-black); color: var(--sov-red); }
+
+.btn.ink {
+  background: var(--sov-black);
+  color: var(--sov-paper);
+}
+.btn.ink::before { background: var(--sov-red); }
+.btn.ink:hover { color: var(--sov-paper); }
+.btn.ink:active { background: var(--sov-red); color: var(--sov-black); }
+
+.btn.gold {
+  background: var(--sov-gold);
+  color: var(--sov-black);
+}
+.btn.gold::before { background: var(--sov-black); }
+.btn.gold:hover { color: var(--sov-paper); }
+.btn.gold:active { background: var(--sov-black); color: var(--sov-red); }
+
+/* ============================================================
+   输入框：rounded-none + border-4 + 泛黄纸底
+   ============================================================ */
+.input {
+  width: 100%;
+  padding: 11px 14px;
+  border: 4px solid var(--sov-black);
+  border-radius: 0;
+  background: var(--sov-paper);
+  color: var(--sov-black);
+  font-family: var(--font-sans);
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: .03em;
+  outline: none;
+  transition: border-color 100ms linear, box-shadow 100ms linear;
+}
+.input:focus {
+  border-color: var(--sov-red);
+  box-shadow: 0 0 0 2px var(--sov-red);
+}
+.input::placeholder { color: var(--sov-brown); font-weight: 700; }
+
+/* ============================================================
+   卡片：rounded-none + border-4 + 大硬阴影 + overflow-hidden
+   ============================================================ */
+.card {
+  background: var(--sov-white);
+  border: 4px solid var(--sov-black);
+  border-radius: 0;
+  box-shadow: var(--shadow-lg);
+  overflow: hidden;
+}
+
+/* 标签徽章（等级语义：红=重点 / 金=巩固 / 黑=快速通道） */
+.badge {
+  display: inline-block;
+  padding: 3px 12px;
+  border: 4px solid var(--sov-black);
+  border-radius: 0;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: .08em;
+  line-height: 1.4;
+}
+.badge.red { background: var(--sov-red); color: var(--sov-paper); }
+.badge.gold { background: var(--sov-gold); color: var(--sov-black); }
+.badge.black { background: var(--sov-black); color: var(--sov-paper); }
+
+/* 对角线分隔线（构成主义） */
+.diag-line {
+  display: block;
+  height: 6px;
+  transform: rotate(-3deg);
+}
+.diag-line.red { background: var(--sov-red); }
+.diag-line.black { background: var(--sov-black); }
+.diag-line.gold { background: var(--sov-gold); }
+
+/* ============================================================
+   莱茵生命网格构图（实验室网格纹理，SVG 图案而非渐变）
+   ============================================================ */
+.grid-pattern {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cpath d='M28 0H0v28' fill='none' stroke='%231a1a1a' stroke-opacity='0.07'/%3E%3C/svg%3E");
+  background-size: 28px 28px;
+}
+.grid-pattern.on-dark {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cpath d='M28 0H0v28' fill='none' stroke='%23f2e8d5' stroke-opacity='0.10'/%3E%3C/svg%3E");
+}
+.grid-pattern.on-red {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='28'%3E%3Cpath d='M28 0H0v28' fill='none' stroke='%23f2e8d5' stroke-opacity='0.16'/%3E%3C/svg%3E");
+  background-color: var(--sov-red);
+}
+/* 网格对齐的直条色块（无旋转） */
+.grid-bar {
+  display: inline-block;
+  border: 4px solid var(--sov-black);
+}
+.grid-bar.red { background: var(--sov-red); }
+.grid-bar.gold { background: var(--sov-gold); }
+.grid-bar.black { background: var(--sov-black); }
+
+/* 动效：尊重系统减弱动效设置 */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    transition: none !important;
+    animation: none !important;
+  }
+}
