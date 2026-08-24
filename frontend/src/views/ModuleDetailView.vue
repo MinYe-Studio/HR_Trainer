@@ -154,7 +154,7 @@ function isDone(ch) {
   background: var(--sov-paper); color: var(--sov-black);
   border: 3px solid var(--sov-black);
 }
-.ch-no.done { background: var(--sov-black); color: var(--sov-paper); }
+.ch-no.done { background: var(--sov-red); color: var(--sov-paper); }
 .ch-body { flex: 1; min-width: 0; padding-right: 54px; }
 .ch-body h3 { margin: 0 0 3px; font-size: 15px; line-height: 1.35; }
 .summary { margin: 0; color: var(--sov-brown); font-size: 12.5px; font-weight: 700; }
@@ -169,7 +169,7 @@ function isDone(ch) {
   border-bottom: 3px solid var(--sov-black);
   clip-path: polygon(0 0, 100% 0, 100% 100%, 50% calc(100% - 7px), 0 100%);
 }
-.bookmark.done { background: var(--sov-black); color: var(--sov-paper); }
+.bookmark.done { background: var(--sov-red); color: var(--sov-paper); }
 
 @media (max-width: 720px) {
   .head-card { padding: 16px 14px; }

@@ -26,49 +26,27 @@ const totalPages = computed(() => pages.value.length)
 const isLastPage = computed(() => pageIdx.value === totalPages.value - 1)
 
 function splitPages(content) {
-  const isHeading = (b) => /^#{1,3}\s/.test(b)
-  const isQuote = (b) => b.startsWith('>')
+  const isH2 = (b) => /^##\s/.test(b)
   const isHr = (b) => /^-{3,}$/.test(b)
+  // 属于"导学页"的标题（并入第一页）
+  const INTRO_HEADS = ['案例引入', '带着问题学']
 
-  // 1) 语义单元：标题开新单元；引用块（思考/自检）并入前一段；普通段落并入当前单元
-  const units = []
+  // 语义分页：首页 = 标题+案例引入+思考+带着问题学；
+  // 之后每个「## 知识点/进阶视角/案例复盘/费曼自检」为一页
+  const pages = []
   let cur = ''
   for (const b of content.split(/\n{2,}/).map((x) => x.trim()).filter(Boolean)) {
     if (isHr(b)) continue
-    if (isHeading(b)) {
-      if (cur) units.push(cur)
-      cur = b
-    } else if (isQuote(b) && cur) {
-      cur += '\n\n' + b
-    } else if (cur) {
-      cur += '\n\n' + b
-    } else {
-      cur = b
+    if (isH2(b)) {
+      const isIntro = INTRO_HEADS.some((h) => b.includes(h))
+      if (!isIntro && cur) {
+        pages.push(cur)
+        cur = ''
+      }
     }
+    cur = cur ? cur + '\n\n' + b : b
   }
-  if (cur) units.push(cur)
-
-  // 2) 一级标题（H1）与下一单元合并，避免首页只有孤标题
-  if (units.length > 1 && /^#\s/.test(units[0])) {
-    units[1] = units[0] + '\n\n' + units[1]
-    units.shift()
-  }
-
-  // 3) 按阅读字数预算分页（约 550 字/页 → 一章 3~5 页）
-  const BUDGET = 550
-  const pages = []
-  let page = ''
-  for (const u of units) {
-    if (!page) {
-      page = u
-    } else if (page.length + u.length <= BUDGET) {
-      page += '\n\n' + u
-    } else {
-      pages.push(page)
-      page = u
-    }
-  }
-  if (page) pages.push(page)
+  if (cur) pages.push(cur)
   return pages
 }
 
@@ -160,17 +138,11 @@ async function toggleComplete() {
         <MarkdownBody :content="pages[pageIdx] || ''" />
       </div>
 
-      <!-- 翻页控制 -->
-      <div class="pager">
-        <button class="btn" :disabled="pageIdx === 0 || !totalPages" @click="go(-1)">
-          <span>上一段</span>
-        </button>
-        <span class="page-ind">{{ totalPages ? pageIdx + 1 : 0 }} / {{ totalPages }}</span>
-        <button v-if="!isLastPage" class="btn primary" :disabled="!totalPages" @click="go(1)">
-          <span>下一段</span>
-        </button>
+      <!-- 翻页提示（纯滑动翻页，无按钮） -->
+      <div v-if="totalPages > 1" class="pager">
+        <span class="swipe-hint">← 左右滑动翻页 →</span>
+        <span class="page-ind">{{ pageIdx + 1 }} / {{ totalPages }}</span>
       </div>
-      <p v-if="totalPages > 1" class="swipe-hint">← 左右滑动翻页 →</p>
 
       <!-- 最后一页：操作方块 -->
       <div v-if="isLastPage && totalPages" class="footer-bar">
@@ -202,14 +174,13 @@ async function toggleComplete() {
 
 .content-card { padding: 26px 28px; margin-bottom: 12px; }
 
-/* 翻页控制 */
+/* 翻页提示 */
 .pager {
-  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  display: flex; align-items: center; justify-content: center; gap: 12px;
   margin-bottom: 14px;
 }
-.pager .btn { min-width: 96px; padding: 10px 8px; font-size: 13.5px; }
 .page-ind { font-size: 13px; font-weight: 900; color: var(--sov-brown); }
-.swipe-hint { margin: 0 0 12px; text-align: center; font-size: 11.5px; font-weight: 900; color: var(--sov-ink-3, #93a1b1); }
+.swipe-hint { font-size: 11.5px; font-weight: 900; color: var(--sov-ink-3, #93a1b1); }
 
 /* 最后一页操作按钮（统一方块） */
 .footer-bar { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
