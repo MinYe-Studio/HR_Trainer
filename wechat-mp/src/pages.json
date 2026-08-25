@@ -1,0 +1,99 @@
+{
+	"pages": [
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "RHINE·HR 技能训练营",
+				"navigationBarBackgroundColor": "#f2e8d5",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/modules/list",
+			"style": {
+				"navigationBarTitleText": "技能模块",
+				"navigationBarBackgroundColor": "#f2e8d5",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/modules/detail",
+			"style": {
+				"navigationBarTitleText": "模块详情",
+				"navigationBarBackgroundColor": "#f2e8d5",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/modules/chapter",
+			"style": {
+				"navigationBarTitleText": "章节讲解",
+				"navigationBarBackgroundColor": "#f2e8d5",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/modules/practice",
+			"style": {
+				"navigationBarTitleText": "章节训练",
+				"navigationBarBackgroundColor": "#f2e8d5",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/modules/exam",
+			"style": {
+				"navigationBarTitleText": "模块考核",
+				"navigationBarBackgroundColor": "#f2e8d5",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/modules/examResult",
+			"style": {
+				"navigationBarTitleText": "考核结果",
+				"navigationBarBackgroundColor": "#f2e8d5",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/tasks/index",
+			"style": {
+				"navigationBarTitleText": "教学任务",
+				"navigationBarBackgroundColor": "#f2e8d5",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/placement/intro",
+			"style": {
+				"navigationBarTitleText": "入营摸底测试",
+				"navigationBarBackgroundColor": "#f2e8d5",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/placement/test",
+			"style": {
+				"navigationBarTitleText": "摸底测试",
+				"navigationBarBackgroundColor": "#f2e8d5",
+				"navigationBarTextStyle": "black"
+			}
+		},
+		{
+			"path": "pages/placement/result",
+			"style": {
+				"navigationBarTitleText": "摸底结果",
+				"navigationBarBackgroundColor": "#f2e8d5",
+				"navigationBarTextStyle": "black"
+			}
+		}
+	],
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "RHINE·HR",
+		"navigationBarBackgroundColor": "#f2e8d5",
+		"backgroundColor": "#f2e8d5",
+		"backgroundTextStyle": "dark"
+	}
+}
