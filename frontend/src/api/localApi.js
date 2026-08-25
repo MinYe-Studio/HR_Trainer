@@ -149,7 +149,12 @@ export const localApi = {
         picked.push(...randomSample(bank, Math.min(per, bank.length)))
       }
       picked.sort((a, b) => a.module_code.localeCompare(b.module_code) || a.sort_order - b.sort_order)
-      return picked.map((q) => ({ ...q, options: q.options }))
+      // 不含答案；补充 module_id（前端按模块分组需要）
+      return picked.map((q) => {
+        const m = moduleByCode(q.module_code)
+        const { answer, ...rest } = q
+        return { ...rest, module_id: m ? m.sort_order : 0, options: q.options }
+      })
     }
     if (p === '/placement/submit') {
       const qs = QUESTIONS.filter((q) => body.question_ids.includes(q.id))

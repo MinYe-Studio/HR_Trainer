@@ -87,13 +87,23 @@ function go(delta) {
 }
 
 // 滑动手势翻页：左滑下一页，右滑上一页
+// 表格内滑动（横向滚动表格）或垂直滑动（滚动页面）不触发翻页
 let touchX = null
+let touchY = null
+let touchOnTable = false
 function onTouchStart(e) {
   touchX = e.changedTouches[0].clientX
+  touchY = e.changedTouches[0].clientY
+  touchOnTable = !!e.target.closest('table')
 }
 function onTouchEnd(e) {
   if (touchX === null) return
   const dx = e.changedTouches[0].clientX - touchX
+  const dy = e.changedTouches[0].clientY - touchY
+  // 表格内操作：交给表格自身横向滚动，不翻页
+  if (touchOnTable) { touchX = null; return }
+  // 垂直滑动大于水平：视为页面滚动，不翻页
+  if (Math.abs(dy) > Math.abs(dx)) { touchX = null; return }
   if (Math.abs(dx) > 60) {
     if (dx < 0) go(1)
     else go(-1)
